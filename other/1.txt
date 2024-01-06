@@ -1,0 +1,1311 @@
+/////////////////////////////////////////////////////////////////////// A - Relational Operator UVA - 11172
+
+#include <bits/stdc++.h>
+
+struct city {
+    std::string name; // city name
+    std::string os; // operating system
+    int trade{};  // trade value
+};
+
+int main() {
+    int n_case;
+    std::cin >> n_case;
+    while (n_case--) {
+        int n1, n2; // n1: north, n2: south
+        std::cin >> n1;
+        std::vector<city> north(n1);
+        for (int i = 0; i < n1; i++) {
+            std::cin >> north[i].name >> north[i].os >> north[i].trade;
+        }
+        std::cin >> n2;
+        std::vector<city> south(n2);
+        for (int i = 0; i < n2; i++) {
+            std::cin >> south[i].name >> south[i].os >> south[i].trade;
+        }
+        std::vector<std::vector<int>> dp(n1 + 1, std::vector<int>(n2 + 1, 0));
+        for (int i = 1; i <= n1; i++) {
+            for (int j = 1; j <= n2; j++) {
+                if (north[i - 1].os == south[j - 1].os) {
+                    dp[i][j] = std::max(dp[i - 1][j - 1] + north[i - 1].trade + south[j - 1].trade, dp[i][j]);
+                }
+                dp[i][j] = std::max(dp[i][j], dp[i - 1][j]);
+                dp[i][j] = std::max(dp[i][j], dp[i][j - 1]);
+            }
+        }
+        std::cout << dp[n1][n2] << " ";
+        int i = n1, j = n2;
+        int ans = 0; // ans es eel numero de puentes
+        while (i > 0 && j > 0) {
+            if (dp[i][j] == dp[i - 1][j]) {
+                --i;
+            } else if (dp[i][j] == dp[i][j - 1]) {
+                --j;
+            } else {
+                ans++;
+                --i;
+                --j;
+            }
+        }
+        std::cout << ans << std::endl;
+    }
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// B - Robot Instructions UVA - 12503
+
+#include <bits/stdc++.h>
+
+int move[110];
+int solution(char *input, int i){
+    if(input[0] == 'S')
+    {
+        int j;
+        std::string str(input);
+        std::string str2 = str.substr(str.find_last_of(" ") + 1);
+        j = atoi(str2.c_str());
+        move[i] = move[j - 1];
+    }
+    else{
+        move[i] = (input[0] == 'L') ? -1 : 1;
+    }
+    return move[i];
+}
+
+int main(){
+    int t, n;
+    char arr_inp[50];
+
+    std::cin >> t;
+    while(t--){
+        scanf(" %d ",&n);
+
+        int i, pos = 0;
+        for(i = 0; i < n; i++)
+        {
+            gets(arr_inp);
+            pos += solution(arr_inp, i);
+        }
+
+        std::cout << pos << std::endl;
+    }
+
+    return 0;
+}
+////////////////Segunda version recomendada
+#include <bits/stdc++.h>
+
+int* move; // Arreglo dinámico para almacenar los movimientos
+
+int solution(char *input, int i) {
+    if (input[0] == 'S') {
+        int j;
+        std::string str(input);
+        std::string str2 = str.substr(str.find_last_of(" ") + 1);
+        j = atoi(str2.c_str());
+        move[i] = move[j - 1];
+    } else {
+        move[i] = (input[0] == 'L') ? -1 : 1;
+    }
+    return move[i];
+}
+
+int main() {
+    int t, n;
+    char arr_inp[50];
+
+    std::cin >> t;
+    while (t--) {
+        scanf(" %d ", &n);
+
+        // Asignar memoria dinámica al arreglo 'move'
+        move = new int[n];
+
+        int i, pos = 0;
+        for (i = 0; i < n; i++) {
+            gets(arr_inp);
+            pos += solution(arr_inp, i);
+        }
+
+        std::cout << pos << std::endl;
+
+        // Liberar la memoria dinámica del arreglo 'move'
+        delete[] move;
+    }
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// C - Love Calculator UVA - 10424
+
+#include <bits/stdc++.h>
+
+int main() {
+    std::string s1, s2;
+    while (getline(std::cin, s1)) {
+        getline(std::cin, s2);
+        int sum1 = 0, sum2 = 0;
+        for (char i : s1) {
+            if (isalpha(i)) {
+                if (isupper(i)) {
+                    sum1 += i - 'A' + 1;
+                } else {
+                    sum1 += i - 'a' + 1;
+                }
+            }
+        }
+        for (char i : s2) {
+            if (isalpha(i)) {
+                if (isupper(i)) {
+                    sum2 += i - 'A' + 1;
+                } else {
+                    sum2 += i - 'a' + 1;
+                }
+            }
+        }
+        while (sum1 > 9) {
+            int temp = sum1;
+            sum1 = 0;
+            while (temp) {
+                sum1 += temp % 10;
+                temp /= 10;
+            }
+        }
+        while (sum2 > 9) {
+            int temp = sum2;
+            sum2 = 0;
+            while (temp) {
+                sum2 += temp % 10;
+                temp /= 10;
+            }
+        }
+        if (sum1 > sum2) {
+            std::swap(sum1, sum2);
+        }
+        double ans = (double) sum1 / sum2 * 100;
+        std::cout << std::fixed << std::setprecision(2) << ans << " %" << std::endl;
+    }
+    return 0;
+}
+
+
+////////////Segunda forma recomendada
+#include <bits/stdc++.h>
+using namespace std;
+
+int sumOfDigits(int num) {
+    int sum = 0;
+    while (num > 0) {
+        sum += num % 10;
+        num /= 10;
+    }
+    if (sum > 9) {
+        return sumOfDigits(sum);
+    }
+    return sum;
+}
+
+int main() {
+    string s1, s2;
+    while (getline(cin, s1)) {
+        getline(cin, s2);
+        int sum1 = 0, sum2 = 0;
+
+        for (char i : s1) {
+            if (isalpha(i)) {
+                if (isupper(i)) {
+                    sum1 += i - 'A' + 1;
+                } else {
+                    sum1 += i - 'a' + 1;
+                }
+            }
+        }
+        for (char i : s2) {
+            if (isalpha(i)) {
+                if (isupper(i)) {
+                    sum2 += i - 'A' + 1;
+                } else {
+                    sum2 += i - 'a' + 1;
+                }
+            }
+        }
+
+        sum1 = sumOfDigits(sum1);
+        sum2 = sumOfDigits(sum2);
+
+        if (sum1 > sum2) {
+            swap(sum1, sum2);
+        }
+        double ans = (double)sum1 / sum2 * 100;
+        cout << fixed << setprecision(2) << ans << " %" << endl;
+    }
+
+    return 0;
+}
+
+
+/////////////////////////////////////////////////////////////////////// D - Sub-prime UVA - 11679
+
+#include <bits/stdc++.h>
+
+int main() {
+    int banks, debentures;
+    while (std::cin >> banks >> debentures) {
+        if (banks == 0 && debentures == 0) break;
+        int arr[banks];
+        for (int i = 0; i < banks; i++) {
+            std::cin >> arr[i];
+        }
+        int d, c, v; // debtor, creditor, value
+        for (int i = 0; i < debentures; i++) {
+            std::cin >> d >> c >> v;
+            *(arr + d - 1) -= v;
+            *(arr + c - 1) += v;
+        }
+        bool flag = true; // el flag es para saber si todos los bancos tienen saldo positivo
+        for (int i = 0; i < banks; i++) {
+            if (*(arr + i) < 0) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag) std::cout << "S" << std::endl;
+        else std::cout << "N" << std::endl;
+    }
+    return 0;
+}
+
+/////////////////////////Segunda forma
+#include <iostream>
+#include <vector>
+
+int main() {
+    int banks, debentures;
+    while (std::cin >> banks >> debentures) {
+        if (banks == 0 && debentures == 0) break;
+
+        std::vector<int> arr(banks, 0); // Inicializar el saldo de los bancos en 0
+
+        for (int i = 0; i < banks; i++) {
+            std::cin >> arr[i];
+        }
+
+        int d, c, v; // debtor, creditor, value
+        for (int i = 0; i < debentures; i++) {
+            std::cin >> d >> c >> v;
+            arr[d - 1] -= v;
+            arr[c - 1] += v;
+        }
+
+        bool flag = true; // El flag es para saber si todos los bancos tienen saldo positivo
+        for (int i = 0; i < banks; i++) {
+            if (arr[i] < 0) {
+                flag = false;
+                break;
+            }
+        }
+
+        if (flag) std::cout << "S" << std::endl;
+        else std::cout << "N" << std::endl;
+    }
+    return 0;
+}
+
+//////////////////////////// tercera forma recomendada
+#include <iostream>
+#include <vector>
+
+bool isBankBalanced(const std::vector<int>& arr, int currentBank) {
+    if (currentBank < 0) {
+        return true;
+    }
+
+    if (arr[currentBank] < 0) {
+        return false;
+    }
+
+    return isBankBalanced(arr, currentBank - 1);
+}
+
+int main() {
+    int banks, debentures;
+    while (std::cin >> banks >> debentures) {
+        if (banks == 0 && debentures == 0) break;
+
+        std::vector<int> arr(banks, 0);
+
+        for (int i = 0; i < banks; i++) {
+            std::cin >> arr[i];
+        }
+
+        int d, c, v; // debtor, creditor, value
+        for (int i = 0; i < debentures; i++) {
+            std::cin >> d >> c >> v;
+            arr[d - 1] -= v;
+            arr[c - 1] += v;
+        }
+
+        bool flag = isBankBalanced(arr, banks - 1);
+
+        if (flag) {
+            std::cout << "S" << std::endl;
+        } else {
+            std::cout << "N" << std::endl;
+        }
+    }
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// A - Pole Position UVA - 12150
+
+#include <bits/stdc++.h>
+
+int main() {
+    int n;
+    while (std::cin >> n and n) {
+        std::vector<int> v(n); // vector with size n
+        for (int i = 0; i < n; i++) {
+            int c, p; // c = color, p = position
+            std::cin >> c >> p;
+            if (i + p < 0 or i + p >= n or v[i + p] != 0) v[0] = -1; // if the position is out of range or the position is already occupied
+            else v[i + p] = c; // if the position is valid and is not occupied
+        }
+        if (v[0] == -1) { // if the first position is occupied
+            std::cout << -1 << std::endl;
+        } else { // if the first position is not occupied
+            std::cout << v[0]; // print the first position
+            for (int i = 1; i < n; ++i) // for the rest of the positions
+                std::cout << " " << v[i]; // print the position
+            std::cout << std::endl;
+        }
+    }
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// B - Army Buddies UVA - 12356
+
+#include <bits/stdc++.h>
+
+int main() {
+    int s, b; // s = number of soldiers, b = number of loss reports
+    while (std::cin >> s >> b and s and b) {
+        std::vector<int> left(s + 2), right(s + 2); // left[i] = left neighbor of soldier i, right[i] = right neighbor of soldier i
+        for (int i = 0; i <= s + 1; ++i) {
+            left[i] = i - 1;
+            right[i] = i + 1;
+        }
+        while (b--) { // b loss reports
+            int l, r;
+            std::cin >> l >> r;
+            if (left[l] < 1) std::cout << "* ";
+            else std::cout << left[l] << " ";
+            if (right[r] > s) std::cout << "*\n";
+            else std::cout << right[r] << "\n";
+            right[left[l]] = right[r];
+            left[right[r]] = left[l];
+        }
+        std::cout << "-\n";
+    }
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// C - The Merchant Guild UVA - 12181
+
+#include <bits/stdc++.h>
+
+typedef long long ll;
+typedef std::vector<std::vector<ll>> matrix;
+
+void solve(){
+    int n, m, M; // number of local merchants among all n traders
+    std::cin >> n >> m >> M;
+
+    std::vector<int> num(n + 1, 0);
+    matrix c(n + 1, std::vector<ll>(n + 1, 0));
+    matrix dp(n + 1, std::vector<ll>(n - m + 1, 0));
+
+    for(int i = 0; i <= n; ++i){
+        c[i][0] = 1;
+        for(int j = 1; j <= i; ++j)
+            c[i][j] = (c[i - 1][j - 1] + c[i - 1][j]) % M;
+    }
+
+    for(int i = 0; i < m; ++i){
+        int a, b; // m pairs of integers, a: position i-th in the queue, b: favorite position
+        std::cin >> a >> b;
+        num[b]++;
+    }
+
+    int flag = 0, s = 0;
+    for (int i = n; i >=1 ; --i) {
+        s += num[i];
+        if (s > n - i + 1) flag = 1;
+    }
+
+    if (flag) {
+        std::cout << "NO" << std::endl;
+        return;
+    }
+
+    dp[0][n - m] = 1;
+    s = 0;
+
+    for(int i = 0; i < n; ++i){
+        s += num[i + 1];
+        int t1 = n - i - 1;
+        for (int j = 0; j <= n - m; ++j) {
+            if (!dp[i][j]) continue;
+            for (int k = std::max(0, i + 1 - (n - m - j + s)); k <= j; ++k) {
+                dp[i + 1][j - k] += dp[i][j] * c[j][k];
+                dp[i + 1][j - k] %= M;
+            }
+        }
+    }
+
+    std::cout << "YES " << dp[n][0] << std::endl;
+}
+
+int main(){
+    int n_cases;
+    std::cin >> n_cases;
+
+    for(int i = 1; i <= n_cases; ++i)
+        solve();
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// D - Good Teacher UVA - 12662
+
+#include <bits/stdc++.h>
+
+inline bool lessThan(int a, int b) {
+    if(a == -1) return false;
+    if(b == -1) return true;
+    return a < b;
+}
+
+int main() {
+    int n;
+    std::cin >> n;
+    std::vector<std::string> S(n + 1, "");
+    std::string name;
+    for(int i = 0; i < n; ++i) {
+        std::cin >> name;
+        S[i + 1] = name;
+    }
+    int Q;
+    std::cin >> Q;
+    while(Q--) {
+        int p;
+        std::cin >> p;
+        if(S[p] != "?") {
+            std::cout << S[p] << std::endl;
+        } else {
+            int ld = -1, rd = -1;
+            for(int i = p; i > 0; --i) {
+                if(S[i] != "?") {
+                    ld = p - i;
+                    break;
+                }
+            }
+            for(int i = p; i <= n; ++i) {
+                if(S[i] != "?") {
+                    rd = i - p;
+                    break;
+                }
+            }
+            if(ld == rd) {
+                std::cout << "middle of " << S[p - ld] << " and " << S[p + rd] << std::endl;
+            } else if(lessThan(ld, rd)) {
+                for(int i = 0; i < ld; ++i) {
+                    std::cout << "right of ";
+                }
+                std::cout << S[p - ld] << std::endl;
+            } else {
+                for(int i = 0; i < rd; ++i) {
+                    std::cout << "left of ";
+                }
+                std::cout << S[p + rd] << std::endl;
+            }
+        }
+    }
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// A - Burger Stand UVA - 13048
+
+#include <bits/stdc++.h>
+
+int main() {
+    int n_cases;
+    std::cin >> n_cases;
+    for (int cases = 1; cases <= n_cases; cases++) {
+        std::string s;
+        std::cin >> s;
+        int ret = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if (s[i] == '-' and s[i + 1] != 'B' and s[i + 2] != 'B' and s[i + 1] != 'S' and s[i - 1] != 'S')
+                ret++;
+        }
+        std::cout << "Case " << cases << ": " << ret << std::endl;
+    }
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// B - Only I did it! UVA - 11222
+
+#include <bits/stdc++.h>
+
+int main() {
+    int T;
+    std::cin >> T;
+    for (int Case = 1; Case <= T; ++Case) {
+        std::cout << "Case #" << Case << ":" << std::endl;
+        std::vector<std::vector<int>> B(3);
+        std::unordered_map<int, int> mark;
+
+        for (int i = 0; i < 3; ++i) {
+            int A;
+            std::cin >> A;
+            B[i].resize(A);
+            for (int j = 0; j < A; ++j) {
+                std::cin >> B[i][j];
+                mark[B[i][j]]++;
+            }
+            std::sort(B[i].begin(), B[i].end());
+        }
+
+        int max = 0;
+        std::vector<int> solve(3);
+
+        for (int i = 0; i < 3; ++i) {
+            int tmp = 0;
+            for (int j : B[i]) {
+                if (mark[j] == 1) {
+                    tmp++;
+                }
+            }
+            if (tmp > max) {
+                max = tmp;
+            }
+            solve[i] = tmp;
+        }
+
+        for (int i = 0; i < 3; ++i) {
+            if (solve[i] == max) {
+                std::cout << i + 1 << " " << solve[i];
+                for (int j : B[i]) {
+                    if (mark[j] == 1) {
+                        std::cout << " " << j;
+                    }
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// C - Network UVA - 1267
+
+#include <bits/stdc++.h>
+
+int dfs(const std::vector<std::vector<int>>& g, int u, int p, int dep, int& place, int m, int s, int& ret) {
+    //g: graph, u: current node, p: parent node, dep: depth, place: place, m: distance, s: VOD server node, ret: result
+    int leaf = 0, pp = 0x3f3f3f3f;
+    for (int v : g[u]) {
+        if (v == p)
+            continue;
+        int p;
+        int tmp = dfs(g, v, u, dep + 1, p, m, s, ret);
+        pp = std::min(p, pp);
+        leaf = std::max(leaf, tmp);
+    }
+    place = pp;
+    if (leaf - dep + pp - dep <= m)
+        leaf = 0;
+    if (leaf == dep + m) {
+        place = dep;
+        ret += (u != s);
+        leaf = 0;
+    }
+    return (g[u].size() == 1) ? dep : leaf;
+}
+
+int main() {
+    int T;
+    std::cin >> T;
+    while (T--) {
+        int n, m, s;
+        std::cin >> n >> s >> m;
+        std::vector<std::vector<int>> g(n + 1);
+        for (int i = 1; i < n; ++i) {
+            int x, y;
+            std::cin >> x >> y;
+            g[x].push_back(y);
+            g[y].push_back(x);
+        }
+
+        int ret = 0;
+        int foo;
+        dfs(g, s, -1, 0, foo, m, s, ret);
+        std::cout << ret << std::endl;
+    }
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// D - Brothers UVA - 12187
+
+#include <bits/stdc++.h>
+
+void battle(std::vector<std::vector<int>>& g, int n) { // g: grid, n: number of heirs
+    std::vector<std::vector<int>> next(g);
+    int rowSize = g.size();
+    int colSize = g[0].size();
+    for (int i = 0; i < rowSize; i++) {
+        for (int j = 0; j < colSize; j++) {
+            int opp = (g[i][j] + 1) % n;
+            if (i != 0 and g[i - 1][j] == opp)
+                next[i - 1][j] = g[i][j];
+            if (i + 1 != rowSize and g[i + 1][j] == opp)
+                next[i + 1][j] = g[i][j];
+            if (j != 0 and g[i][j - 1] == opp)
+                next[i][j - 1] = g[i][j];
+            if (j + 1 != colSize and g[i][j + 1] == opp)
+                next[i][j + 1] = g[i][j];
+        }
+    }
+    g = next;
+}
+
+int main() {
+    int n, r, c, k;
+    while (std::cin >> n >> r >> c >> k and n) { // n: number of heirs, r: row, c: column, k: number of battles
+        std::vector<std::vector<int>> g(r, std::vector<int>(c));
+        int v;
+        for (int i = 0; i < r; i++) {
+            for (int j = 0; j < c; j++) {
+                std::cin >> v;
+                g[i][j] = v;
+            }
+        }
+        while (k--) {
+            battle(g, n);
+        }
+        for (int i = 0; i < r; i++) {
+            for (int j = 0; j < c; j++) {
+                std::cout << g[i][j] << (j + 1 == c ? "\n" : " ");
+            }
+        }
+    }
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// A - Birthdates UVA - 12541
+
+#include <bits/stdc++.h>
+
+struct Person // struct to store person's information{
+    std::string name;
+    int day{};
+    int month{};
+    int year{};
+};
+
+bool compare(const Person& a, const Person& b) //function to compare two person by their age{
+    if (a.year != b.year)
+        return a.year < b.year;
+    else if (a.month != b.month)
+        return a.month < b.month;
+    else
+        return a.day < b.day;
+}
+
+int main(){
+    int n; // number of people
+    std::cin >> n;
+    std::cin.ignore(); // ignore the newline character
+    std::vector<Person> list; // vector to store the list of people
+    for (int i = 0; i < n; ++i){ // input the list of people
+        Person p;
+        std::string s;
+        getline(std::cin, s);
+        std::stringstream ss(s);
+        ss >> p.name >> p.day >> p.month >> p.year;
+        list.push_back(p);
+    }
+    sort(list.begin(), list.end(), compare); // sort the list by age
+    std::cout << list[n - 1].name << std::endl; // print the oldest person
+    std::cout << list[0].name << std::endl; // print the youngest person
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// B - Falling Ants UVA - 12709
+
+#include <bits/stdc++.h>
+
+int main() {
+    int n;
+    while(std::cin >> n){
+        if (n == 0) break;
+        std::vector<std::tuple<int,int,int,int>> a(n); // L, W, H, V
+        for (int i = 0; i < n; ++i) {
+            int l, w, h; // L: length, W: width, H: height
+            std::cin >> l >> w >> h;
+            a[i] = std::make_tuple(h, l*w*h, l,w); // h: height, l*w*h: volume, l: length, w: width
+        }
+        std::sort(a.begin(), a.end()); // sort by height
+        std::cout << std::get<1>(a.back()) << std::endl; // print the volume of the ant with the highest downward acceleration
+    }
+}
+
+/////////////////////////////////////////////////////////////////////// C - Contest Scoreboard UVA - 10258
+
+///////////////////////////ten cuidado al usarlo
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Board {
+    bool exist;
+    int cont;
+    int prob;
+    int score;
+    int penalty[9];
+};
+
+// Función para comparar dos objetos Board para la función sort
+bool compareBoard(const Board &p1, const Board &p2) {
+    if (p1.prob > p2.prob) return true;
+    if (p1.prob < p2.prob) return false;
+    if (p1.score < p2.score) return true;
+    if (p1.score > p2.score) return false;
+    if (p1.cont < p2.cont) return true;
+    return false;
+}
+
+// Función para procesar un conjunto de datos
+void processDataSet() {
+    int cont, prob, time;
+    char L;
+    Board* person = new Board[100];
+    string line;
+    stringstream ss;
+
+    for (int i = 0; i < 100; i++) {
+        person[i].exist = false;
+        person[i].cont = i + 1;
+        person[i].prob = 0;
+        person[i].score = 0;
+        for (int j = 0; j < 9; j++) {
+            person[i].penalty[j] = 0;
+        }
+    }
+
+    while (getline(cin, line) && line != "") {
+        ss.clear();
+        ss.str(line);
+        ss >> cont >> prob >> time >> L;
+        person[cont - 1].exist = true;
+        if (person[cont - 1].penalty[prob - 1] == -1) continue;
+        if (L == 'I') {
+            person[cont - 1].penalty[prob - 1]++;
+        } else if (L == 'C') {
+            person[cont - 1].prob++;
+            person[cont - 1].score += (person[cont - 1].penalty[prob - 1] * 20 + time);
+            person[cont - 1].penalty[prob - 1] = -1;
+        }
+    }
+
+    sort(person, person + 100, compareBoard);
+    for (int i = 0; i < 100; i++) {
+        if (person[i].exist)
+            cout << person[i].cont << " " << person[i].prob << " " << person[i].score << endl;
+    }
+
+    delete[] person;
+}
+
+int main() {
+    int T;
+    cin >> T;
+    getchar(), getchar();
+
+    for (int t = 0; t < T; t++) {
+        if (t) cout << endl;
+        processDataSet();
+    }
+
+    return 0;
+}
+
+
+/////////////////////////////////////////////////////////////////////// D - Sort! Sort!! and Sort!!! UVA - 11321
+#include <bits/stdc++.h>
+
+bool sortt(int a, int b, int m)
+{
+    if (a % m != b % m) return a % m < b % m;
+    if (a & 1){
+        if (b & 1) return a > b;
+        return true;
+    }
+    if (b & 1) return false;
+    return a < b;
+}
+
+int main()
+{
+    int n, m;
+
+    while (std::cin >> n >> m, std::cout << n << ' ' << m << '\n', n){
+        std::vector<int> numbers(n);
+
+        for (int i = 0; i < n; ++i)
+            std::cin >> numbers[i];
+
+        std::sort(numbers.begin(), numbers.begin() + n, [m](int i, int j) {
+            return sortt(i, j, m);
+        });
+
+        for (int i = 0; i < n; ++i)
+            std::cout << numbers[i] << std::endl;
+    }
+}
+
+/////////////////////////////////////////////////////////////////////// A - Splitting Numbers UVA - 11933
+#include <bits/stdc++.h>
+
+void solve(int n) {
+    std::bitset<32> x(n), a, b;
+    int c = 0;
+    for (int i = 0; i < 32; ++i) {
+        if (x[i]) {
+            if (c & 1) b[i] = true;
+            else a[i] = true;
+            c++;
+        }
+    }
+    std::cout << a.to_ulong() << " " << b.to_ulong() << std::endl;
+}
+
+int main() {
+    int n;
+    while (std::cin >> n) {
+        if (n == 0)
+            return 0;
+        solve(n);
+    }
+}
+
+///segunda forma
+
+#include <bits/stdc++.h>
+
+std::pair<std::bitset<32>, std::bitset<32>> splitBits(int n) {
+    std::bitset<32> x(n), a, b;
+    bool turn = false;
+    for (int i = 0; i < 32; ++i) {
+        if (turn && x[i] == 1) {
+            b[i] = x[i];
+            a[i] = false;
+            turn = false;
+        } else if (x[i] == 1) {
+            b[i] = false;
+            a[i] = x[i];
+            turn = true;
+        }
+    }
+    return std::make_pair(a, b);
+}
+
+int main() {
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    std::cout.tie(nullptr);
+
+    int n;
+    while (true) {
+        std::cin >> n;
+        if (n == 0) break;
+
+        std::bitset<32> a, b;
+        std::tie(a, b) = splitBits(n);
+
+        std::cout << a.to_ulong() << " " << b.to_ulong() << std::endl;
+    }
+}
+
+/////////////////////////////////////////////////////////////////////// B - The Most Potent Corner UVA - 10264
+
+#include <bits/stdc++.h>
+
+int calculateCornerPotency(const std::vector<unsigned char>& weights, int cornerIndex, int dimension) {
+    int sum = 0;
+    int mask = 1;
+
+    for (int i = 0; i < dimension; ++i) {
+        sum += weights[cornerIndex ^ mask];
+        mask <<= 1;
+    }
+
+    return sum;
+}
+
+int findMaxPotencySum(const std::vector<unsigned char>& weights, int dimension) {
+    int maxSum = -1;
+    int cornerCount = 1 << dimension;
+
+    for (int i = 0; i < cornerCount - 1; ++i) {
+        int i_pow = calculateCornerPotency(weights, i, dimension);
+
+        for (int mask = 1; mask < cornerCount; mask <<= 1) {
+            int j = i ^ mask;
+            int j_pow = calculateCornerPotency(weights, j, dimension);
+            int currentSum = i_pow + j_pow;
+
+            maxSum = std::max(maxSum, currentSum);
+        }
+    }
+
+    return maxSum;
+}
+
+void processInput() {
+    int d; // dimension
+    int w; // weight
+
+    while (std::cin >> d) {
+        int cornerCount = 1 << d;
+        std::vector<unsigned char> weights(cornerCount);
+
+        for (int i = 0; i < cornerCount; ++i) {
+            std::cin >> w;
+            weights[i] = static_cast<unsigned char>(w);
+        }
+
+        int maxSum = findMaxPotencySum(weights, d);
+        std::cout << maxSum << std::endl;
+    }
+}
+
+int main() {
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+    processInput();
+    return 0;
+}
+
+
+/////////////////////////////////////////////////////////////////////// C - Algorithm of Phil UVA - 12720
+#include <bits/stdc++.h>
+
+const int mod = 1e9 + 7; // 10^9 + 7 = 1000000007 = 0x3b9aca07 = 1e9 + 7
+
+std::string generatePalindrome(const std::string& a) {
+    int len = a.length();
+    std::string b(len, '0');  // Inicializamos b con la longitud de a y caracteres '0'.
+    int l, r, mid, ans =0;
+    l = r = mid = len / 2;
+
+    if (len % 2 == 0) l--;
+
+    for (int i = len; i >= 1; i--) {
+        if (i % 2 != 0) {
+            b[ans++] = a[mid];
+            l = l - 1;
+            r = r + 1;
+        } else {
+            if (a[l] > a[r]) {
+                b[ans++] = a[l];
+                mid = r;
+            } else {
+                b[ans++] = a[r];
+                mid = l;
+            }
+        }
+    }
+
+    return b;
+}
+
+int calculateSum(const std::string& b) {
+    int sum = 0;
+    int t = 1;
+
+    for (int i = b.length() - 1; i >= 0; i--) {
+        if (i != b.length() - 1) t = (t * 2) % mod; // Usamos t *= 2 % mod para evitar desbordamientos.
+        int temp = b[i] - '0';
+        sum = (sum + temp * t) % mod;  // Usamos sum += temp * t % mod para evitar desbordamientos.
+    }
+
+    return sum;
+}
+
+int main() {
+    int T;
+    std::cin >> T;
+    int ca = 1;
+
+    while (T--) {
+        std::string a;
+        std::cin >> a;
+
+        std::string palindrome = generatePalindrome(a);
+        int sum = calSum(palindrome);
+
+        std::cout << "Case #" << ca++ << ": " << sum << std::endl;
+    }
+
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// A - Krakovia UVA - 10925
+
+#include <bits/stdc++.h>
+
+int main(){
+    int n, m, ok=0;
+    std::string s;
+    while(std::cin >> n >> m and (n or m)){
+        std::vector<int> base(1000, 0);
+        for(int i = 0; i < n; ++i){
+            std::cin >> s;
+            std::reverse(s.begin(), s.end());
+            for(int j = 0; j < s.size(); ++j)
+                base[j] += s[j] - '0';
+        }
+        for(int i = 0; i < 1000; ++i){
+            base[i+1] += base[i]/10;
+            base[i] %= 10;
+        }
+        std::cout << "Bill #" << ++ok << " costs ";
+        int i = 999;
+        while(i >= 0 and base[i] == 0)
+            --i;
+        int j = i, temp = 0;
+        std::vector<int> ans;
+        for(; i >= 0; --i)
+            std::cout << base[i];
+        std::cout << ": each friend should pay ";
+        for(; j >= 0; --j){
+            temp = temp*10 + base[j];
+            ans.push_back(temp/m);
+            temp %= m;
+        }
+        int k = 0;
+        while(k < ans.size() and ans[k] == 0)
+            ++k;
+        if(k == ans.size()){
+            std::cout << 0 << std::endl << std::endl;
+            continue;
+        }
+        for(; k < ans.size(); ++k)
+            std::cout << ans[k];
+        std::cout << std::endl << std::endl;
+    }
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// B - Very Easy !!! UVA - 10523
+
+/////////////////////////// primera version
+#include <iostream>
+
+int main() {
+    int N, A; // N: número de términos en la serie y A: valor de A
+    while (std::cin >> N >> A) {
+        int powers[200] = {}; // almacena los valores de la potencia k^i
+        int current[200] = {1}; // almacena el valor actual de la serie
+        for (int i = 0; i < N; i++) {
+            for (int &val : current)
+                val *= A;
+            for (int index = 0; index < 199; index++) {
+                current[index + 1] += current[index] / 10; // Llevar el acarreo
+                current[index] %= 10; // Mantener solo el dígito de las unidades
+            }
+            for (int index = 0; index < 200; index++)
+                powers[index] += current[index] * (i + 1); // Sumar a powers los términos de la serie
+            for (int index = 0; index < 199; index++) {
+                powers[index + 1] += powers[index] / 10; // Llevar el acarreo
+                powers[index] %= 10; // Mantener solo el dígito de las unidades
+            }
+        }
+        int total_digits = 199;
+        while (total_digits > 0 and !powers[total_digits]) --total_digits; // Encontrar la cantidad de dígitos significativos
+        for (int index = total_digits; index >= 0; --index)
+            std::cout << powers[index];
+        std::cout << std::endl;
+    }
+}
+
+////////////////////// segunda version recomendada
+#include <iostream>
+#include <vector>
+
+int main() {
+    int N, A; // N: número de términos en la serie y A: valor de A
+    while (std::cin >> N >> A) {
+        std::vector<int> powers(200, 0); // almacena los valores de la potencia k^i
+        std::vector<int> current(200, 0); // almacena el valor actual de la serie
+        current[0] = 1;
+
+        for (int i = 0; i < N; i++) {
+            for (int &val : current)
+                val *= A;
+
+            for (int index = 0; index < 199; index++) {
+                current[index + 1] += current[index] / 10; // Llevar el acarreo
+                current[index] %= 10; // Mantener solo el dígito de las unidades
+            }
+
+            for (int index = 0; index < 200; index++)
+                powers[index] += current[index] * (i + 1); // Sumar a powers los términos de la serie
+
+            for (int index = 0; index < 199; index++) {
+                powers[index + 1] += powers[index] / 10; // Llevar el acarreo
+                powers[index] %= 10; // Mantener solo el dígito de las unidades
+            }
+        }
+
+        int total_digits = 199;
+        while (total_digits > 0 and !powers[total_digits]) --total_digits; // Encontrar la cantidad de dígitos significativos
+
+        for (int index = total_digits; index >= 0; --index)
+            std::cout << powers[index];
+
+        std::cout << std::endl;
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////// C - Multiple of 17 UVA - 11879
+
+#include <bits/stdc++.h>
+
+int CalculateModulus(const std::string& str) {
+    int tmp = 0;
+    for (char c : str) {
+        tmp = tmp * 10 + (c - '0');
+        tmp %= 17;
+    }
+    return tmp;
+}
+
+int main() {
+    std::string str;
+    while (std::getline(std::cin, str)) {
+        if (str == "0")
+            break;
+        int result = CalculateModulus(str);
+        std::cout << (result == 0) << std::endl;
+    }
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// A - Forming Quiz Teams UVA - 10911
+#include <iostream>
+#include <cmath>
+#include <iomanip>
+#include <list>
+#include <algorithm>
+
+using namespace std;
+
+struct point
+{
+    double x, y;
+};
+
+double dis(point a, point b) {
+    return sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+}
+
+int n, m;
+list<point> friends;
+double dp[1 << 17];
+
+double dope(int mask)
+{
+    if (mask == (1 << (2 * n)) - 1)
+        return 0;
+    double &ret = dp[mask];
+    if (ret > 0)
+        return ret;
+    ret = 1e9;
+    list<point>::iterator it1, it2;
+    int i = 0;
+    for (it1 = friends.begin(); it1 != friends.end(); ++it1, ++i) {
+        int j = i + 1;
+        it2 = it1;
+        advance(it2, 1);
+        for (; it2 != friends.end(); ++it2, ++j) {
+            if (!(mask & (1 << i)) && !(mask & (1 << j)) && j < 2 * n)
+                ret = min(ret, dis(*it1, *it2) + dope(mask | (1 << j) | (1 << i)));
+        }
+    }
+    return ret;
+}
+
+void solve()
+{
+    friends.clear();
+    fill_n(dp, sizeof(dp) / sizeof(double), 0.0);
+    for (int i = 0; i < n * 2; i++)
+    {
+        string x;
+        point a{};
+        cin >> x >> a.x >> a.y;
+        friends.push_back(a);
+    }
+    cout << fixed << setprecision(2) << dope(0) << endl;
+}
+
+int main()
+{
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    int t = 1;
+
+    while (cin >> n && n)
+    {
+        cout << "Case " << t++ << ": ";
+        solve();
+    }
+}
+
+/////////////////////////////////////////////////////////////////////// B - Back to High School Physics UVA - 10071
+
+#include <bits/stdc++.h>
+
+using namespace std;
+
+int main()
+{
+    int v, t;
+    while(cin >> v >> t)
+    {
+        cout << 2 * v * t << endl;
+    }
+    return 0;
+}
+
+/////////////////////////////////////////////////////////////////////// Etruscan Warriors Never Play Chess UVA - 11614
+#include <bits/stdc++.h>
+
+int main(){
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+    int n_case;
+    std::cin >> n_case;
+    while(n_case--){
+        long int n_warriors;
+        std::cin >> n_warriors;
+        std::cout << (long int)floor((sqrt(1+(8 * n_warriors)) - 1) / 2) << '\n';
+    }
+    return 0;
+}

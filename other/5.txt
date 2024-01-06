@@ -1,0 +1,1384 @@
+
+///////////////////////////////////////////////////////////////////////////////////////// What Goes Up UVA - 481
+/////////////////////////////// primera version
+#include <vector>
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+vector<int> A, M, M_id, P;
+
+void print(int end) {
+    if (end < 0) return;
+    print(P[end]);
+    cout << A[end] << "\n";
+}
+
+void updateLIS(int num) {
+    A.push_back(num);
+    int pos = lower_bound(M.begin(), M.begin() + M.size(), num) - M.begin();
+    if (pos == M.size()) {
+        M.push_back(num);
+        M_id.push_back(A.size() - 1);
+    } else {
+        M[pos] = num;
+        M_id[pos] = A.size() - 1;
+    }
+    P.push_back(pos > 0 ? M_id[pos - 1] : -1);
+}
+
+int main() {
+    int L = 0, L_end = 0;
+    int num;
+    while (cin >> num) {
+        updateLIS(num);
+        if (M.size() > L) {
+            L = M.size();
+            L_end = A.size() - 1;
+        }
+    }
+    cout << L << "\n-\n";
+    print(L_end);
+    return 0;
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Coin Changing Again UVA - 11259
+/////////////////////////////// primera version
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+const int MAX_N = 100010;
+
+vector<vector<long long>> f(5, vector<long long>(MAX_N));
+int t, c[5], q, d[5];
+
+long long get(int val){
+  if(val < 0) return 0;
+  return f[4][val];
+}
+
+void readArray(int* arr, int size){
+  for(int i = 1; i <= size; ++i) cin >> arr[i];
+}
+
+void calculateF(){
+  f[0][0] = 1;
+  for(int i = 1; i <= 4; ++i){
+    f[i][0] = 1;
+    for(int j = 1; j < MAX_N; ++j){
+      f[i][j] = f[i-1][j];
+      if(j >= c[i]) f[i][j] += f[i][j - c[i]];
+    }
+  }
+}
+
+long long calculateAnswer(int val){
+  long long ans = 0;
+  for(int mask = 0; mask < 16; ++mask){
+    int curval = val;
+    for(int i = 0; i < 4; ++i){
+      if(mask & 1 << i){
+        curval -= c[i+1] * 1LL * (d[i+1]+1);
+      }
+    }
+    if(__builtin_popcount(mask) & 1) ans -= get(curval);
+    else ans += get(curval);
+  }
+  return ans;
+}
+
+int main(){
+  cin >> t;
+  while(t--){
+    readArray(c, 4);
+    calculateF();
+    cin >> q;
+    while(q--){
+      readArray(d, 4);
+      int val; cin >> val;
+      cout << calculateAnswer(val) << "\n";
+    }
+  }
+  return 0;
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Account Book UVA - 11832
+/////////////////////////////// primera version
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+vector<vector<int>> f(41, vector<int>(81000, -1));
+vector<int> A(100);
+vector<bool> add(100), minuss(100);
+int N, M;
+
+int getf(int i, int j){
+    if(f[i][j] != -1) return f[i][j];
+    if (i == N) return 0;
+    f[i][j] = 0;
+    int next = j + A[i+1];
+    bool can = true;
+    if(next < 81000){
+        can = getf(i+1, next);
+        if(can){
+            f[i][j] = 1;
+            add[i+1] = true;
+        }
+    }
+    next = j - A[i+1];
+    if (next > 0){
+        can = getf(i+1, next);
+        if(can){
+            f[i][j] = 1;
+            minuss[i+1] = true;
+        }
+    }
+    return f[i][j];
+}
+
+int main(){
+    int base = 40000;
+    while(cin >> N >> M){
+        if(N == 0 && M == 0) break;
+        for(int i = 1; i <= N; i++){
+            cin >> A[i];
+        }
+        fill(add.begin(), add.end(), false);
+        fill(minuss.begin(), minuss.end(), false);
+        for(auto &row : f){
+            fill(row.begin(), row.end(), -1);
+        }
+        f[N][base+M] = 1;
+        getf(0, base);
+        if(f[0][base] == 0) cout << "*\n";
+        else{
+            for(int i = 1; i <= N; i++){
+                if(add[i] && minuss[i]) cout << "?";
+                else if(add[i]) cout << "+";
+                else if(minuss[i]) cout << "-";
+            }
+            cout << "\n";
+        }
+    }
+    return 0;
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Garbage Heap UVA - 10755
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef long long ll;
+
+const ll INF = 1e18;
+
+ll kadane(vector<vector<vector<ll>>> &v, ll x1, ll x2, ll y1, ll y2, ll h){
+    ll maxi = -INF;
+    ll local = 0;
+    for(ll i = 1; i <= h; i++){
+        local = max(local+v[i][x1][y1]+v[i][x2][y2]-v[i][x1][y2]-v[i][x2][y1], v[i][x1][y1]+v[i][x2][y2]-v[i][x1][y2]-v[i][x2][y1]);
+        maxi = max(maxi, local);
+    }
+    return maxi;
+}
+
+void readCube(vector<vector<vector<ll>>> &cube, ll a, ll b, ll c, ll &sum){
+    for(ll i = 0; i < a; i++){
+        for(ll j = 0; j < b; j++){
+            for(ll k = 0; k < c; k++){
+                cin >> cube[i][j][k];
+                sum += cube[i][j][k];
+            }
+        }
+    }
+}
+
+void calculateSuffix(vector<vector<vector<ll>>> &suffix, vector<vector<vector<ll>>> &cube, ll a, ll b, ll c){
+    for(ll i = 1; i <= a; i++){
+        for(ll j = 1; j <= b; j++){
+            for(ll k = 1; k <= c; k++){
+                suffix[i][j][k] += suffix[i][j][k-1] + cube[i-1][j-1][k-1];
+            }
+        }
+    }
+
+    for(ll i = 1; i <= a; i++){
+        for(ll j = 1; j <= b; j++){
+            for(ll k = 1; k <= c; k++){
+                suffix[i][j][k] += suffix[i][j-1][k];
+            }
+        }
+    }
+}
+
+ll findMax(vector<vector<vector<ll>>> &suffix, ll a, ll b, ll c){
+    ll ans = -INF;
+    for(ll j = 1; j <= b; j++){
+        for(ll j2 = 0; j2 < j; j2++){
+            for(ll k = 1; k <= c; k++){
+                for(ll k2 = 0; k2 < k; k2++){
+                    ans = max(ans, kadane(suffix, j, j2, k, k2, a));
+                }
+            }
+        }
+    }
+    return ans;
+}
+
+int main(){
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+    ll t;
+    cin >> t;
+
+    while(t--) {
+        ll a, b, c;
+        cin >> a >> b >> c;
+        ll sum = 0;
+
+        vector<vector<vector<ll>>> cube(a, vector<vector<ll>>(b, vector<ll>(c, 0)));
+        readCube(cube,a,b,c,sum);
+
+        vector<vector<vector<ll>>> suffix(a+1, vector<vector<ll>>(b+1, vector<ll>(c+1, 0)));
+        calculateSuffix(suffix,cube,a,b,c);
+
+        cout << findMax(suffix,a,b,c) << "\n";
+        if(t) cout << "\n";
+    }
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Budget Travel UVA - 222
+/////////////////////////////// primera version
+#include <iostream>
+#include <vector>
+#include <iomanip>
+
+using namespace std;
+
+double total_dist, fuelCapacity, milesPerGallon, iniCost, lowestCost;
+vector<double> distances;
+vector<double> prices;
+int numberOfStops;
+
+void calculateCost(int stop, double distance, double cost) {
+    if(stop == numberOfStops || (distance + fuelCapacity * milesPerGallon >= total_dist)) {
+        if(cost < lowestCost) lowestCost = cost;
+        return;
+    }
+    for(int i = stop; i < numberOfStops; i++) {
+        double fuelUsed = (distances[i] - distance) / milesPerGallon;
+        if((fuelUsed >= fuelCapacity / 2.0 || distances[i] + (fuelCapacity - fuelUsed) * milesPerGallon < distances[i+1]) && fuelUsed <= fuelCapacity)
+            calculateCost(i+1, distances[i], cost + 2.0 + fuelUsed * prices[i] / 100.0);
+    }
+}
+
+int main() {
+    int dataSetNumber = 1;
+    while(cin >> total_dist && total_dist >= 0) {
+        cin >> fuelCapacity >> milesPerGallon >> iniCost >> numberOfStops;
+        lowestCost = 0;
+        distances.resize(numberOfStops);
+        prices.resize(numberOfStops);
+        for(int i = 0; i < numberOfStops; i++) {
+            cin >> distances[i] >> prices[i];
+            lowestCost += prices[i];
+        }
+        distances.push_back(total_dist);
+        calculateCost(0, 0, 0);
+        cout << "Data Set #" << dataSetNumber++ << endl;
+        cout << "minimum cost = $" << fixed << setprecision(2) << lowestCost + iniCost << endl;
+    }
+    return 0;
+}
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Password UVA - 1262
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+void backtrack(int p, map<int, set<char>>& m, vector<string>& ans, string& pass){
+    if(p == 5){
+        ans.emplace_back(pass);
+        return;
+    }
+    for(auto c : m[p]){
+        pass += c;
+        backtrack(p+1, m, ans, pass);
+        pass.pop_back();
+    }
+}
+
+map<int, set<char>> processInput(){
+    map<int, set<char>> m1;
+    string r;
+    for(int i = 0; i < 6; i++){
+        cin >> r;
+        for(int j = 0; j < 5; j++){
+            m1[j].insert(r[j]);
+        }
+    }
+    return m1;
+}
+
+map<int, set<char>> compareMaps(map<int, set<char>>& m1){
+    map<int, set<char>> m;
+    string r;
+    for(int i = 0; i < 6; i++){
+        cin >> r;
+        for(int j = 0; j < 5; j++){
+            if(m1[j].find(r[j]) != m1[j].end()){
+                m[j].insert(r[j]);
+            }
+        }
+    }
+    return m;
+}
+
+int main(){
+    int t;
+    cin >> t;
+    while(t--){
+        int k;
+        cin >> k;
+        vector<string> ans;
+        ans.assign(1, " ");
+        string pass;
+        map<int, set<char>> m1 = processInput();
+        map<int, set<char>> m = compareMaps(m1);
+        backtrack(0, m, ans, pass);
+        if(k >= ans.size()){
+            cout << "NO";
+        }
+        else{
+            cout << ans[k];
+        }
+        cout << endl;
+    }
+}
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// 23 out of 5 UVA - 10344
+/////////////////////////////// primera version
+#include <vector>
+#include <algorithm>
+#include <iostream>
+
+using namespace std;
+
+vector<int> v;
+
+bool pls(int all, int pl){
+    if(pl == 5) return all == 23;
+    int no = v[pl];
+    return pls(all + no, pl + 1) || pls(all - no, pl + 1) || pls(all * no, pl + 1);
+}
+
+int main(){
+    int a,b,c,d,e;
+    while(cin >> a >> b >> c >> d >> e){
+        if(a == 0 && b == 0 && c == 0 && d == 0 && e == 0) break;
+        v = {a, b, c, d, e};
+        sort(v.begin(), v.end());
+        bool ok = false;
+        do{
+            ok = pls(v[0], 1);
+            if(ok)
+                break;
+        }while(next_permutation(v.begin(), v.end()));
+        if(ok) cout << "Possible" << endl;
+        else cout << "Impossible" << endl;
+    }
+    return 0;
+}
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Y2K Accounting Bug UVA - 10576
+/////////////////////////////// primera version
+#include <iostream>
+
+int main(){
+    int n, m, s;
+    while(std::cin >> n >> m){
+        if(4*n < m) s = 10*n -2*m;
+        else if(3*n < 2*m) s = 8*n - 4*m;
+        else if(2*n < 3*m) s = 6*n - 6*m;
+        else if(n < 4*m) s = 3*n - 9*m;
+        else s = -1;
+
+        if(s < 0) std::cout << "Deficit" << std::endl;
+        else std::cout << s << std::endl;
+    }
+    return 0;
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Graph Connectivity UVA - 459
+/////////////////////////////// primera version
+#include <iostream>
+#include <vector>
+#include <map>
+#include <set>
+#include <queue>
+
+std::map<char, std::set<char>> build_graph(std::vector<std::pair<char, char>> &edges){
+    std::map<char, std::set<char>> adj;
+    for(auto &edge : edges){
+        char u = edge.first;
+        char v = edge.second;
+        adj[u].insert(v);
+        adj[v].insert(u);
+    }
+    return adj;
+}
+
+void bfs(char node, std::map<char, std::set<char>> &adj, std::set<char> &visited){
+    std::queue<char> q;
+    q.push(node);
+    visited.insert(node);
+    while(!q.empty()){
+        char u = q.front();
+        q.pop();
+        for(auto &v : adj[u]){
+            if(visited.find(v) == visited.end()){
+                visited.insert(v);
+                q.push(v);
+            }
+        }
+    }
+}
+
+int max_connected_subgraphs(char max_node, std::vector<std::pair<char, char>> &edges){
+    std::map<char, std::set<char>> adj = build_graph(edges);
+    std::set<char> visited;
+    int count = 0;
+
+    for(char node = 'A'; node <= max_node; node++){
+        if(visited.find(node) == visited.end()){
+            count++;
+            bfs(node, adj, visited);
+        }
+    }
+    return count;
+}
+
+int main(){
+    int cases;
+    std::cin >> cases;
+
+    std::string line;
+    getline(std::cin, line);
+    getline(std::cin, line);
+
+    for(int i = 0; i < cases; i++){
+        char max_node;
+        std::cin >> max_node;
+        std::vector<std::pair<char, char>> edges;
+
+        getline(std::cin, line);
+        getline(std::cin, line);
+        while(line != ""){
+            char u = line[0];
+            char v = line[1];
+            edges.push_back({u, v});
+            getline(std::cin, line);
+        }
+
+        int result = max_connected_subgraphs(max_node, edges);
+        std::cout << result << std::endl;
+        if(i < cases - 1) std::cout << std::endl;
+    }
+}
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Oil Deposits UVA - 572
+/////////////////////////////// primera version
+#include <iostream>
+#include <vector>
+using namespace std;
+
+vector<vector<int>> id;
+vector<string> a;
+
+void dfs(int r, int c, int p, int m, int n) {
+    if (r < 0 or r >= m or c < 0 or c >= n) return;
+    if (a[r][c] != '@' or id[r][c] != 0) return;
+    id[r][c] = p;
+    for (int i = -1; i < 2; ++i)
+        for (int j = -1; j < 2; ++j)
+            if (i != 0 or j != 0) dfs(r + i, c + j, p, m, n);
+}
+
+int main() {
+    int m, n;
+    while (cin >> m >> n and m and n) {
+        a.resize(m);
+        id.assign(m, vector<int>(n, 0));
+        for (int i = 0; i < m; ++i)
+            cin >> a[i];
+        int b = 0;
+        for (int i = 0; i < m; ++i)
+            for (int j = 0; j < n; ++j)
+                if (id[i][j] == 0 and a[i][j] == '@')
+                    dfs(i, j, ++b, m, n);
+        cout << b << endl;
+    }
+    return 0;
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Robot Motion UVA - 10116
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+void dfs(int x, vector<int> &vis, vector<vector<int>> graph, vector<int> &ans, int &loop, int &steps, int c, int l){
+    int a;
+    vis[x] = 1;
+    if(x == c*l)return;
+    ans[x] = steps;
+    steps++;
+    for(int i = 0; i < graph[x].size(); i++){
+        a = graph[x][i];
+        if(!vis[a]){
+            dfs(a, vis, graph, ans, loop, steps, c, l);
+        }else{
+            loop = steps - ans[a];
+        }
+    }
+}
+
+vector<vector<int>> createGraph(int l, int c){
+    vector<vector<int>> graph;
+    graph.resize((l*c)+1);
+    return graph;
+}
+
+vector<int> createVector(int size, int initValue){
+    vector<int> vec;
+    vec.resize(size, initValue);
+    return vec;
+}
+
+void readInputAndFillGraph(vector<vector<int>> &graph, int l, int c){
+    int a,b,g,forr;
+    forr = l*c;
+    char mov;
+    for(int i = 0; i < l; i++){
+        for(int j = 0; j < c; j++){
+            cin >> mov;
+            switch (mov) {
+                case 'N':
+                    i == 0 ? graph[(i*c)+j].push_back(l*c) : graph[(i*c)+j].push_back((i-1)*c+j);
+                    break;
+                case 'S':
+                    i == l - 1 ? graph[(i*c)+j].push_back(l*c) : graph[(i*c)+j].push_back((i+1)*c+j);
+                    break;
+                case 'W':
+                    j == 0 ? graph[(i*c)+j].push_back(l*c) : graph[(i*c)+j].push_back(i*c+(j-1));
+                    break;
+                case 'E':
+                    j == c - 1 ? graph[(i*c)+j].push_back(l*c) : graph[(i*c)+j].push_back(i*c+(j+1));
+                    break;
+            }
+        }
+    }
+}
+
+int main(){
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int ini, l, c;
+    cin >> l >> c >> ini;
+
+    while(l or c or ini){
+        vector<vector<int>> graph = createGraph(l, c);
+        vector<int> vis = createVector((l*c)+1, 0);
+        vector<int> s = createVector(l*c, 0);
+
+        readInputAndFillGraph(graph, l, c);
+
+        int loop = 0;
+        int steps = 0;
+        int aux = 0;
+        dfs(ini-1, vis, graph, s, loop, steps, c, l);
+        if(loop){
+            cout << steps - loop << " step(s) before a loop of " << loop << " step(s)" << endl;
+        }else{
+            cout << steps << " step(s) to exit" << endl;
+        }
+        cin >> l >> c >> ini;
+    }
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Calling Circles UVA - 247
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Graph {
+    unordered_map<string, unordered_map<string, int>> g;
+    unordered_map<string, bool> visited;
+    unordered_map<string, int> tin, low;
+    int timer = 0;
+    stack<string> prevc;
+    vector<vector<string>> components;
+
+    void getAns(string node) {
+        visited[node] = true;
+        low[node] = tin[node] = timer++;
+        prevc.push(node);
+        for (auto x : g[node]) {
+            if (!visited[x.first]) {
+                getAns(x.first);
+            }
+            low[node] = min(low[node], low[x.first]);
+        }
+        if (low[node] == tin[node]) {
+            vector<string> cmp;
+            while (true) {
+                string current = prevc.top();
+                prevc.pop();
+                cmp.push_back(current);
+                low[current] = visited.size();
+                if (node == current) break;
+            }
+            components.push_back(cmp);
+        }
+    }
+
+    void printComponents(int& cas) {
+        if (cas > 1) {
+            cout << endl;
+        }
+        cout << "Calling circles for data set " << cas++ << ":" << endl;
+        for (auto x : components) {
+            for (int i = 0; i < x.size() - 1; i++) {
+                cout << x[i] << ", ";
+            }
+            cout << x.back() << endl;
+        }
+    }
+
+    void processGraph() {
+        for (auto x : visited) {
+            if (visited[x.first] == false) {
+                getAns(x.first);
+            }
+        }
+    }
+
+    void readGraph(int n, int m) {
+        string a, b;
+        g.clear();
+        tin.clear();
+        low.clear();
+        visited.clear();
+        timer = 0;
+        components.clear();
+        for (int i = 0; i < m; i++) {
+            cin >> a >> b;
+            g[a][b]++;
+            visited[a] = false;
+            visited[b] = false;
+        }
+    }
+};
+
+int main() {
+    Graph graph;
+    int n, m;
+    int cas = 1;
+    while (cin >> n >> m) {
+        if (n == 0) {
+            break;
+        }
+        graph.readGraph(n, m);
+        graph.processGraph();
+        graph.printComponents(cas);
+    }
+}
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Dark roads UVA - 11631
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+using ii = pair<ll, ll>;
+
+void prim(vector<vector<ii>> *graph, vector<ll> *dist, vector<ll> *precursor, int s){
+    (*dist)[s] = 0;
+    vector<bool> visited((*dist).size(), 0);
+    priority_queue<ii, vector<ii>, greater<ii>> pq;
+    pq.push(ii(0, s));
+
+    visited[s] = 1;
+
+    while(!pq.empty()){
+        ii front = pq.top(); pq.pop();
+        ll d = front.first, u = front.second;
+        visited[u] = 1;
+        for(auto v : (*graph)[u]){
+            if(visited[v.first]) continue;
+            if(v.second < (*dist)[v.first]){
+                (*dist)[v.first] = v.second;
+                (*precursor)[v.first] = u;
+                pq.push(ii((*dist)[v.first], v.first));
+            }
+        }
+    }
+}
+
+void initializeVectors(vector<vector<ii>> &graph, vector<ll> &dist, vector<ll> &precursor, ll n) {
+    for(ll i = 0; i < n; i++){
+        dist[i] = INT_MAX;
+        precursor[i] = -1;
+    }
+}
+
+void readEdges(vector<vector<ii>> &graph, ll &fullCost, ll m) {
+    ll a, b, w;
+    for(ll i = 0; i < m; i++){
+        cin >> a >> b >> w;
+        graph[a].push_back(ii(b, w));
+        graph[b].push_back(ii(a, w));
+        fullCost += w;
+    }
+}
+
+ll calculateMinCost(vector<vector<ii>> &graph, vector<ll> &precursor, ll n) {
+    ll minCost = 0;
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < graph[i].size(); j++){
+            if(graph[i][j].first != precursor[i]){
+                continue;
+            }
+            minCost += graph[i][j].second;
+        }
+    }
+    return minCost;
+}
+
+int main(){
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    ll n, m, fullCost, minCost, saving;
+    while(1){
+        cin >> n >> m;
+        if(n == 0 && m == 0) break;
+
+        vector<vector<ii>> graph(n);
+        vector<ll> dist(n), precursor(n);
+
+        initializeVectors(graph, dist, precursor, n);
+
+        fullCost = 0;
+        minCost = 0;
+
+        readEdges(graph, fullCost, m);
+
+        prim(&graph, &dist, &precursor, 0);
+
+        minCost = calculateMinCost(graph, precursor, n);
+
+        saving = fullCost - minCost;
+        cout << saving << endl;
+    }
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Traffic UVA - 10449
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+int cubic(int n){
+    return n*n*n;
+}
+
+vector<vector<int>> initializeMatrix(int v, vector<int>& b){
+    vector<vector<int>> m_adj(v, vector<int>(v, INT_MAX));
+    for(int i = 0; i < v; i++){
+        cin >> b[i];
+    }
+    return m_adj;
+}
+
+void fillMatrix(vector<vector<int>>& m_adj, vector<int>& b, int en){
+    for(int i = 0; i < en; i++){
+        int source, dest;
+        cin >> source >> dest;
+        source--;
+        dest--;
+        m_adj[source][dest] = cubic(b[dest] - b[source]);
+    }
+}
+
+void setDiagonal(vector<vector<int>>& m_adj, int v){
+    for(int i = 0; i < v; i++){
+        m_adj[i][i] = 0;
+    }
+}
+
+void floydWarshall(vector<vector<int>>& m_adj, int v){
+    for(int k = 0; k < v; k++){
+        for(int i = 0; i < v; i++){
+            for(int j = 0; j < v; j++){
+                if((m_adj[i][k] != INT_MAX && m_adj[k][j] != INT_MAX) && (m_adj[i][j] > m_adj[i][k] + m_adj[k][j])){
+                    m_adj[i][j] = m_adj[i][k] + m_adj[k][j];
+                }
+            }
+        }
+    }
+}
+
+void processQueries(vector<vector<int>>& m_adj, int v, int query){
+    for(int i = 0; i < query; i++){
+        int dest;
+        cin >> dest;
+        dest--;
+        bool bolt = false;
+        for(int j = 0; j < v; j++){
+            if(m_adj[j][j] < 0 && m_adj[0][j] != INT_MAX && m_adj[j][dest] != INT_MAX){
+                bolt = true;
+                break;
+            }
+        }
+        if(bolt or m_adj[0][dest] == INT_MAX or m_adj[0][dest] < 3){
+            cout << "?" << endl;
+        }else{
+            cout << m_adj[0][dest] << endl;
+        }
+    }
+}
+
+void solve(int v){
+    vector<int> b(v);
+    vector<vector<int>> m_adj = initializeMatrix(v, b);
+
+    int en;
+    cin >> en;
+    fillMatrix(m_adj, b, en);
+    setDiagonal(m_adj, v);
+    floydWarshall(m_adj, v);
+
+    int query;
+    cin >> query;
+    processQueries(m_adj, v, query);
+}
+
+int main(){
+    int junctions;
+    int count = 1;
+    while(cin >> junctions){
+        cout << "Set #" << count << endl;
+        count++;
+        solve(junctions);
+    }
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Commandos UVA - 11463
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+const int N = 101;
+int d[N][N];
+
+void initializeMatrix() {
+    for(int i = 0; i < N; i++){
+        for(int j = 0; j < N; j++){
+            d[i][j] = 1e9;
+            if(i == j) d[i][j] = 0;
+        }
+    }
+}
+
+void readEdges(int m) {
+    for(int i = 0; i < m; i++){
+        int x, y;
+        cin >> x >> y;
+        d[x][y] = d[y][x] = 1;
+    }
+}
+
+void floydWarshall() {
+    for(int k = 0; k < N; k++){
+        for(int i = 0; i < N; i++){
+            for(int j = 0; j < N; j++){
+                d[i][j] = min(d[i][j], d[i][k] + d[k][j]);
+            }
+        }
+    }
+}
+
+int computeMaxDistance(int source, int dist, int n) {
+    int mx = 0;
+    for(int i = 0; i < n; i++){
+        mx = max(mx, d[source][i] + d[i][dist]);
+    }
+    return mx;
+}
+
+int main(){
+    int t, cs = 0;
+    cin >> t;
+
+    while(t--){
+        int n, m; cin >> n >> m;
+        initializeMatrix();
+        readEdges(m);
+        floydWarshall();
+
+        int source, dist;
+        cin >> source >> dist;
+        int mx = computeMaxDistance(source, dist, n);
+
+        cout << "Case " << ++cs << ": ";
+        cout << mx << endl;
+    }
+}
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// A Chess Knight UVA - 633
+/////////////////////////////// primera version
+#include <iostream>
+#include <queue>
+#include <vector>
+
+using namespace std;
+
+const int INF = 0xfffffff;
+
+struct State {
+    int x, y, k;
+};
+
+void transformA(int x, int y, int k, int n, vector<vector<int>>& grid, vector<vector<vector<int>>>& dist, queue<State>& states) {
+    int dx[] = {1, 1, -1, -1, 2, 2, -2, -2};
+    int dy[] = {2, -2, 2, -2, 1, -1, 1, -1};
+    int tx, ty;
+    for (int i = 0; i < 8; i++) {
+        tx = x + dx[i], ty = y + dy[i];
+        if (tx <= 0 or ty <= 0 or tx > n or ty > n) continue;
+        if (grid[tx][ty] == 1) continue;
+        if (dist[tx][ty][0] == 0) {
+            dist[tx][ty][0] = dist[x][y][k] + 1;
+            states.push({tx, ty, 0});
+        }
+    }
+}
+
+void transformB(int x, int y, int k, int n, vector<vector<int>>& grid, vector<vector<vector<int>>>& dist, queue<State>& states) {
+    int dx[] = {2, 2, -2, -2};
+    int dy[] = {2, -2, 2, -2};
+    int tx, ty;
+    for (int i = 0; i < 4; i++) {
+        tx = x + dx[i], ty = y + dy[i];
+        if (tx <= 0 or ty <= 0 or tx > n or ty > n) continue;
+        if (grid[tx][ty] == 1) continue;
+        if (dist[tx][ty][1] == 0) {
+            dist[tx][ty][1] = dist[x][y][k] + 1;
+            states.push({tx, ty, 1});
+        }
+    }
+}
+
+void transformC(int x, int y, int k, int n, vector<vector<int>>& grid, vector<vector<vector<int>>>& dist, queue<State>& states) {
+    int tx, ty;
+    tx = n - x + 1, ty = y;
+    if (grid[tx][ty] == 0) {
+        if (dist[tx][ty][2] == 0) {
+            dist[tx][ty][2] = dist[x][y][k] + 1;
+            states.push({tx, ty, 2});
+        }
+    }
+
+    tx = x, ty = n - y + 1;
+    if (grid[tx][ty] == 0) {
+        if (dist[tx][ty][2] == 0) {
+            dist[tx][ty][2] = dist[x][y][k] + 1;
+            states.push({tx, ty, 2});
+        }
+    }
+}
+
+int bfs(int startX, int startY, int endX, int endY, int n, vector<vector<int>>& grid) {
+    int x, y, k;
+    vector<vector<vector<int>>> dist(n + 1, vector<vector<int>>(n + 1, vector<int>(4, 0)));
+    queue<State> states;
+
+    if (startX == endX && startY == endY) return 0;
+
+    for (int i = 0; i < 3; i++)
+        states.push({startX, startY, i});
+
+    while (!states.empty()) {
+        x = states.front().x;
+        y = states.front().y;
+        k = states.front().k;
+        states.pop();
+
+        if (k != 0)
+            transformA(x, y, k, n, grid, dist, states);
+        if (k != 1)
+            transformB(x, y, k, n, grid, dist, states);
+        if (k != 2)
+            transformC(x, y, k, n, grid, dist, states);
+    }
+
+    int ret = INF;
+    for (int i = 0; i < 3; i++)
+        if (dist[endX][endY][i])
+            ret = min(ret, dist[endX][endY][i]);
+
+    return ret;
+}
+
+int main() {
+    int n, startX, startY, endX, endY, x, y;
+    while (cin >> n && n) {
+        cin >> startX >> startY;
+        cin >> endX >> endY;
+        vector<vector<int>> grid(n * 2 + 1, vector<int>(n * 2 + 1, 0));
+        while (cin >> x >> y && x != 0 && y != 0)
+            grid[x][y] = 1;
+        n *= 2;
+        int ret = bfs(startX, startY, endX, endY, n, grid);
+        if (ret == INF)
+            cout << "Solution doesn't exist" << endl;
+        else
+            cout << "Result : " << ret << endl;
+    }
+    return 0;
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Chessboard UVA - 10751
+/////////////////////////////// primera version
+#include <iostream>
+#include <cmath>
+#include <iomanip>
+
+using namespace std;
+
+const int MAX_N = 333;
+int cnt[MAX_N];
+
+void initializeCnt() {
+    for (int i = 3; i <= 300; ++i) {
+        cnt[i] = (i - 2) * (i - 2);
+    }
+}
+
+double calculateResult(int n) {
+    double res = 0;
+    if (n > 1)
+        res = static_cast<double>(n * n - cnt[n] + static_cast<double>(cnt[n]) * sqrt(2));
+    return res;
+}
+
+void processTestCases() {
+    int t;
+    cin >> t;
+    while (t--) {
+        int n;
+        cin >> n;
+        double res = calculateResult(n);
+        cout << fixed << setprecision(3) << res << endl;
+        if (t) cout << endl;
+    }
+}
+
+int main() {
+    initializeCnt();
+    processTestCases();
+
+    return 0;
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Black and white painting UVA - 11231
+/////////////////////////////// primera version
+#include <iostream>
+
+using namespace std;
+
+int main(){
+    int m, n, c;
+    while(cin >> m >> n >> c and n != 0){
+        int res = 0;
+        m -= 7;
+        n -= 7;
+        res = c == 1 ? (m*n+1)/2 : (m*n)/2;
+        cout << res << endl;
+    }
+}
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Base -2 UVA - 11121
+/////////////////////////////// primera version
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+// Función para convertir un número decimal a su representación en base -2
+string convertirBaseNegativaDos(int n) {
+    string res = "";
+    int rem;
+    if (n == 0)
+        res = "0";
+    else {
+        while (n) {
+            rem = n % -2;
+            n /= -2;
+            if (rem < 0) {
+                n += 1;
+                rem += 2;
+            }
+            res += (char)('0' + rem);
+        }
+    }
+    reverse(res.begin(), res.end());
+    return res;
+}
+
+int main() {
+    int t, n, cs = 0;
+    cin >> t;
+    while (t--) {
+        cin >> n;
+        string resultado = convertirBaseNegativaDos(n);
+        cout << "Case #" << ++cs << ": " << resultado << endl;
+    }
+
+    return 0;
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Polynomial Roots UVA - 930
+/////////////////////////////// primera version
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <iomanip>
+
+using namespace std;
+
+// Function to apply the Ruffini rule
+vector<double> ruffiniRule(const vector<double>& coefficients, double root) {
+    int n = coefficients.size();
+    vector<double> result(n - 1);
+
+    result[0] = coefficients[0];
+    for (int i = 1; i < n - 1; ++i) {
+        result[i] = coefficients[i] + root * result[i - 1];
+    }
+
+    return result;
+}
+
+// Function to find the roots using the quadratic formula
+pair<double, double> findQuadraticRoots(double a, double b, double c) {
+    double discriminant = b * b - 4 * a * c;
+    double root1 = (-b + sqrt(discriminant)) / (2 * a);
+    double root2 = (-b - sqrt(discriminant)) / (2 * a);
+
+    return make_pair(root1, root2);
+}
+
+int main() {
+    int k;
+    cin >> k;
+
+    for (int i = 0; i < k; ++i) {
+        int n;
+        cin >> n;
+
+        vector<double> coefficients(n + 1);
+        for (int j = 0; j <= n; ++j) {
+            cin >> coefficients[j];
+        }
+
+        vector<double> roots(n - 2);
+        for (int j = 0; j < n - 2; ++j) {
+            cin >> roots[j];
+        }
+
+        // Apply the Ruffini rule n-2 times
+        for (int j = 0; j < n - 2; ++j) {
+            coefficients = ruffiniRule(coefficients, roots[j]);
+        }
+
+        // Use the quadratic formula to find the remaining roots
+        double a = coefficients[0];
+        double b = coefficients[1];
+        double c = coefficients[2];
+
+        pair<double, double> quadraticRoots = findQuadraticRoots(a, b, c);
+
+        // Output the roots rounded to one decimal place
+        cout << fixed << setprecision(1) << quadraticRoots.first << endl;
+        cout << fixed << setprecision(1) << quadraticRoots.second << endl;
+    }
+
+    return 0;
+}
+
+/////////////////////////////// segunda version
+/////////////////////////////////////////////////////////////////////////////////////////  Fibonacci Freeze UVA - 495
+/////////////////////////////// primera version
+#include <iostream>
+#include <vector>
+#include <string>
+
+using namespace std;
+
+string sumar(string a, string b) {
+    string resultado(max(a.size(), b.size()), '0');
+    bool carry = false;
+    for (int i = 0; i < resultado.size(); i++) {
+        int valorA = i < a.size() ? a[a.size() - i - 1] - '0' : 0;
+        int valorB = i < b.size() ? b[b.size() - i - 1] - '0' : 0;
+        int suma = valorA + valorB + carry;
+        resultado[resultado.size() - i - 1] = suma % 10 + '0';
+        carry = suma >= 10;
+    }
+    if (carry)
+        resultado.insert(resultado.begin(), '1');
+    return resultado;
+}
+
+int main() {
+    vector<string> fib(5001);
+    fib[0] = "0";
+    fib[1] = "1";
+    for (int i = 2; i <= 5000; i++)
+        fib[i] = sumar(fib[i - 1], fib[i - 2]);
+
+    int n;
+    while (cin >> n)
+        cout << "The Fibonacci number for " << n << " is " << fib[n] << endl;
+
+    return 0;
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// Combinations UVA - 369
+/////////////////////////////// primera version
+#include<bits/stdc++.h>
+using namespace std;
+
+long long dp[105][105];
+
+void precalculo() {
+    for(int i = 0; i <= 100; i++) {
+        for(int j = 0; j <= i; j++) {
+            if(j == 0 || j == i) {
+                dp[i][j] = 1;
+            } else {
+                dp[i][j] = dp[i-1][j-1] + dp[i-1][j];
+            }
+        }
+    }
+}
+
+int main() {
+    precalculo();
+    int N, M;
+    while(cin >> N >> M, N || M) {
+        cout << N << " things taken " << M << " at a time is " << dp[N][M] << " exactly." << endl;
+    }
+    return 0;
+}
+
+/////////////////////////////// segunda version
+///////////////////////////////////////////////////////////////////////////////////////// How many nodes ? UVA - 10223
+/////////////////////////////// primera version
+#include <iostream>
+#include <vector>
+
+#define lli long long int
+
+std::vector<lli> catalanNumbers(100);
+
+lli calculateCatalanNumber(lli n){
+    if(catalanNumbers[n] != 0)
+        return catalanNumbers[n];
+    catalanNumbers[n] = (calculateCatalanNumber(n-1)*(4*n-2))/(n+1);
+    return catalanNumbers[n];
+}
+
+void initializeCatalanNumbers() {
+    catalanNumbers[0] = 1;
+    catalanNumbers[1] = 1;
+    for(int i = 2; i<= 30; i++)
+        calculateCatalanNumber(i);
+}
+
+lli findIndexInCatalanSequence(lli number) {
+    for(int i = 1; i <= 30; i++){
+        if(catalanNumbers[i] == number){
+            return i;
+        }
+    }
+    return 0;
+}
+
+int main(){
+    lli inputNumber, index;
+
+    initializeCatalanNumbers();
+
+    while(std::cin >> inputNumber){
+        index = findIndexInCatalanSequence(inputNumber);
+        std::cout << index << std::endl;
+    }
+
+    return 0;
+}
+
+/////////////////////////////// segunda version
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+
+void init(ll f[], int N){
+    for(int i = 4; i <= N; ++i)
+        f[i] = f[i-1] + ((i-2) * 1ll * (i-1) / 2 - (i-1) / 2) / 2;
+}
+
+void solve(ll f[], int n){
+    cout << f[n] << endl;
+}
+
+int main(){
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    constexpr int N = 1000000;
+    ll f[N+1];
+    init(f, N);
+    int n;
+    while(cin >> n and n >= 3)
+        solve(f, n);
+    return 0;
+}
+/////////////////////////////// segunda version
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// primera version
+/////////////////////////////// segunda version
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// primera version
+/////////////////////////////// segunda version

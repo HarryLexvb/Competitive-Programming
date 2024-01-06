@@ -1,0 +1,1348 @@
+///////////////////////////////////////////////////////////////////////////////////////// Andy's First Dictionary UVA - 10815
+////////////////// primera version
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+
+std::string toLowerCase(std::string word) {
+    std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+    return word;
+}
+
+int main() {
+    std::vector<std::string> words;
+
+    std::string line;
+    while (std::getline(std::cin, line)) {
+        std::string word;
+        for (char c : line) {
+            if (isalpha(c)) {
+                word += c;
+            } else if (!word.empty()) {
+                words.push_back(toLowerCase(word));
+                word = "";
+            }
+        }
+        if (!word.empty()) {
+            words.push_back(toLowerCase(word));
+        }
+    }
+
+    std::sort(words.begin(), words.end());
+
+    std::string previousWord = "";
+    for (const std::string& word : words) {
+        if (word != previousWord) {
+            std::cout << word << std::endl;
+            previousWord = word;
+        }
+    }
+
+    return 0;
+}
+
+////////////////// segunda version
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+std::string toLowerCase(std::string word) {
+    std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+    return word;
+}
+
+void removeDuplicates(std::vector<std::string>& words) {
+    std::vector<std::string> uniqueWords;
+    uniqueWords.reserve(words.size());
+
+    for (const std::string& word : words) {
+        if (uniqueWords.empty() || word != uniqueWords.back()) {
+            uniqueWords.push_back(word);
+        }
+    }
+
+    words = std::move(uniqueWords);
+}
+
+void processSection(std::vector<std::string>& words, const std::string& section) {
+    std::string word;
+    for (char c : section) {
+        if (isalpha(c)) {
+            word += c;
+        } else if (!word.empty()) {
+            words.push_back(toLowerCase(word));
+            word = "";
+        }
+    }
+    if (!word.empty()) {
+        words.push_back(toLowerCase(word));
+    }
+}
+
+int main() {
+    std::vector<std::string> words;
+
+    std::string line;
+    std::string section;
+    while (std::getline(std::cin, line)) {
+        section += line + ' ';
+    }
+
+    processSection(words, section);
+    std::sort(words.begin(), words.end());
+    removeDuplicates(words);
+
+    for (const std::string& word : words) {
+        std::cout << word << std::endl;
+    }
+
+    return 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////// Lemmings Battle! UVA - 978
+////////////////// primera version
+#include <iostream>
+#include <queue>
+#include <vector>
+
+using namespace std;
+
+void performBattle(priority_queue<int>& greenArmy, priority_queue<int>& blueArmy, vector<int>& greenSurvivors, vector<int>& blueSurvivors, int B) {
+    for (int i = 0; i < B; i++) {
+        if (greenArmy.empty() || blueArmy.empty()) {
+            break;
+        }
+
+        int greenLemming = greenArmy.top();
+        greenArmy.pop();
+
+        int blueLemming = blueArmy.top();
+        blueArmy.pop();
+
+        if (greenLemming > blueLemming) {
+            greenSurvivors.push_back(greenLemming - blueLemming);
+        } else if (greenLemming < blueLemming) {
+            blueSurvivors.push_back(blueLemming - greenLemming);
+        }
+    }
+}
+
+void simulateBattle(int B, int SG, int SB, priority_queue<int>& greenArmy, priority_queue<int>& blueArmy) {
+    while (!greenArmy.empty() && !blueArmy.empty()) {
+        vector<int> greenSurvivors;
+        vector<int> blueSurvivors;
+
+        performBattle(greenArmy, blueArmy, greenSurvivors, blueSurvivors, B);
+
+        for (int power : greenSurvivors) {
+            greenArmy.push(power);
+        }
+
+        for (int power : blueSurvivors) {
+            blueArmy.push(power);
+        }
+    }
+}
+
+int main() {
+    int N;
+    cin >> N;
+
+    while (N--) {
+        int B, SG, SB;
+        cin >> B >> SG >> SB;
+
+        priority_queue<int> greenArmy;
+        priority_queue<int> blueArmy;
+
+        for (int i = 0; i < SG; i++) {
+            int power;
+            cin >> power;
+            greenArmy.push(power);
+        }
+
+        for (int i = 0; i < SB; i++) {
+            int power;
+            cin >> power;
+            blueArmy.push(power);
+        }
+
+        simulateBattle(B, SG, SB, greenArmy, blueArmy);
+
+        if (greenArmy.empty() && blueArmy.empty()) {
+            cout << "green and blue died" << endl;
+        } else if (greenArmy.empty()) {
+            cout << "blue wins" << endl;
+            while (!blueArmy.empty()) {
+                cout << blueArmy.top() << endl;
+                blueArmy.pop();
+            }
+        } else {
+            cout << "green wins" << endl;
+            while (!greenArmy.empty()) {
+                cout << greenArmy.top() << endl;
+                greenArmy.pop();
+            }
+        }
+
+        if (N > 0) {
+            cout << endl;
+        }
+    }
+
+    return 0;
+}
+
+////////////////// segunda version
+#include <iostream>
+#include <queue>
+#include <vector>
+
+using namespace std;
+
+void simulateBattle(priority_queue<int>& green, priority_queue<int>& blue, int B) {
+    vector<int> green_survivors, blue_survivors;
+    for (int i = 0; i < B && !green.empty() && !blue.empty(); i++) {
+        int green_power = green.top();
+        green.pop();
+        int blue_power = blue.top();
+        blue.pop();
+        if (green_power > blue_power) {
+            green_survivors.push_back(green_power - blue_power);
+        } else if (blue_power > green_power) {
+            blue_survivors.push_back(blue_power - green_power);
+        }
+    }
+    for (int power : green_survivors) {
+        green.push(power);
+    }
+    for (int power : blue_survivors) {
+        blue.push(power);
+    }
+}
+
+void solveTestCase() {
+    int B, SG, SB;
+    cin >> B >> SG >> SB;
+    priority_queue<int> green, blue;
+    for (int i = 0; i < SG; i++) {
+        int power;
+        cin >> power;
+        green.push(power);
+    }
+    for (int i = 0; i < SB; i++) {
+        int power;
+        cin >> power;
+        blue.push(power);
+    }
+    while (!green.empty() && !blue.empty()) {
+        simulateBattle(green, blue, B);
+    }
+    if (green.empty() && blue.empty()) {
+        cout << "green and blue died" << endl;
+    } else if (!green.empty()) {
+        cout << "green wins" << endl;
+        while (!green.empty()) {
+            cout << green.top() << endl;
+            green.pop();
+        }
+    } else {
+        cout << "blue wins" << endl;
+        while (!blue.empty()) {
+            cout << blue.top() << endl;
+            blue.pop();
+        }
+    }
+}
+
+int main() {
+    int T;
+    cin >> T;
+    while (T--) {
+        solveTestCase();
+        if (T) {
+            cout << endl;
+        }
+    }
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// 11136 - Hoax or what
+////////////////// primera version
+#include <iostream>
+#include <set>
+#include <algorithm>
+
+using namespace std;
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n;
+    while (cin >> n && n != 0) {
+        multiset<int> bills;
+        long long total = 0;
+        for (int i = 0; i < n; ++i) {
+            int k;
+            cin >> k;
+            for (int j = 0; j < k; ++j) {
+                int x;
+                cin >> x;
+                bills.insert(x);
+            }
+            auto highest = --bills.end();
+            auto lowest = bills.begin();
+            total += (*highest - *lowest);
+            bills.erase(highest);
+            bills.erase(lowest);
+        }
+        cout << total << "\n";
+    }
+
+    return 0;
+}
+
+////////////////// segunda version
+#include <bits/stdc++.h>
+
+using namespace std;
+
+void solve() {
+    int n;
+    cin >> n;
+    while (n) {
+        multiset<int> m;
+        long long ans = 0;
+        for (int i = 0; i < n; i++) {
+            int k;
+            cin >> k;
+            for (int x = 0; x < k; x++) {
+                int a;
+                cin >> a;
+                m.insert(a);
+            }
+            auto x = m.begin();
+            auto y = m.end();
+            y--;
+            ans += *y - *x;
+            m.erase(x);
+            m.erase(y);
+        }
+        cout << ans << endl;
+        cin >> n;
+    }
+}
+
+int main() {
+    int i = 0;
+    solve();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// Chocolate UVA - 13037
+////////////////// primera version
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <set>
+
+using namespace std;
+
+int main() {
+    int T;
+    cin >> T;
+
+    for (int caseNo = 1; caseNo <= T; caseNo++) {
+        cout << "Case #" << caseNo << ":" << endl;
+
+        int L, R, S;
+        cin >> L >> R >> S;
+
+        unordered_map<int, set<int>> chocolates;
+        set<int> allChocolates;
+
+        for (int i = 0; i < L; i++) {
+            int type;
+            cin >> type;
+            chocolates[type].insert(1);
+            allChocolates.insert(type);
+        }
+
+        for (int i = 0; i < R; i++) {
+            int type;
+            cin >> type;
+            chocolates[type].insert(2);
+            allChocolates.insert(type);
+        }
+
+        for (int i = 0; i < S; i++) {
+            int type;
+            cin >> type;
+            chocolates[type].insert(3);
+            allChocolates.insert(type);
+        }
+
+        int uniqueLeju = 0, uniqueRony = 0, uniqueSujon = 0;
+        int commonLejuRony = 0, commonLejuSujon = 0, commonRonySujon = 0;
+
+        for (int type : allChocolates) {
+            if (chocolates[type].size() == 1) {
+                if (chocolates[type].count(1)) uniqueLeju++;
+                if (chocolates[type].count(2)) uniqueRony++;
+                if (chocolates[type].count(3)) uniqueSujon++;
+            } else if (chocolates[type].size() == 2) {
+                if (chocolates[type].count(1) && chocolates[type].count(2)) commonLejuRony++;
+                if (chocolates[type].count(1) && chocolates[type].count(3)) commonLejuSujon++;
+                if (chocolates[type].count(2) && chocolates[type].count(3)) commonRonySujon++;
+            }
+        }
+
+        cout << uniqueLeju << " " << commonRonySujon << endl;
+        cout << uniqueRony << " " << commonLejuSujon << endl;
+        cout << uniqueSujon << " " << commonLejuRony << endl;
+    }
+
+    return 0;
+}
+
+////////////////// segundo version
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <set>
+
+using namespace std;
+
+void leerChocolates(int numChocolates, unordered_map<int, set<int>>& chocolates, set<int>& allChocolates, int boyId) {
+    for (int i = 0; i < numChocolates; i++) {
+        int type;
+        cin >> type;
+        chocolates[type].insert(boyId);
+        allChocolates.insert(type);
+    }
+}
+
+void calcularChocolates(int caseNo, int L, int R, int S, unordered_map<int, set<int>>& chocolates, set<int>& allChocolates) {
+    cout << "Case #" << caseNo << ":" << endl;
+
+    int uniqueLeju = 0, uniqueRony = 0, uniqueSujon = 0;
+    int commonLejuRony = 0, commonLejuSujon = 0, commonRonySujon = 0;
+
+    for (int type : allChocolates) {
+        if (chocolates[type].size() == 1) {
+            if (chocolates[type].count(1)) uniqueLeju++;
+            if (chocolates[type].count(2)) uniqueRony++;
+            if (chocolates[type].count(3)) uniqueSujon++;
+        } else if (chocolates[type].size() == 2) {
+            if (chocolates[type].count(1) && chocolates[type].count(2)) commonLejuRony++;
+            if (chocolates[type].count(1) && chocolates[type].count(3)) commonLejuSujon++;
+            if (chocolates[type].count(2) && chocolates[type].count(3)) commonRonySujon++;
+        }
+    }
+
+    cout << uniqueLeju << " " << commonRonySujon << endl;
+    cout << uniqueRony << " " << commonLejuSujon << endl;
+    cout << uniqueSujon << " " << commonLejuRony << endl;
+}
+
+int main() {
+    int T;
+    cin >> T;
+
+    for (int caseNo = 1; caseNo <= T; caseNo++) {
+        int L, R, S;
+        cin >> L >> R >> S;
+
+        unordered_map<int, set<int>> chocolates;
+        set<int> allChocolates;
+
+        leerChocolates(L, chocolates, allChocolates, 1);
+
+        leerChocolates(R, chocolates, allChocolates, 2);
+
+        // Leer los tipos de chocolates de Sujon
+        leerChocolates(S, chocolates, allChocolates, 3);
+
+        calcularChocolates(caseNo, L, R, S, chocolates, allChocolates);
+    }
+
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// Easy Problem from Rujia Liu? UVA - 11991
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+int processQuery(int k, int v, map<int, vector<int>>& positions) {
+    if (positions.find(v) != positions.end() && positions[v].size() >= k) {
+        return positions[v][k - 1];
+    }
+    return 0;
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m;
+    while (cin >> n >> m) {
+        vector<int> arr(n);
+        map<int, vector<int>> mp;
+
+        for (int i = 0; i < n; i++) {
+            cin >> arr[i];
+            mp[arr[i]].push_back(i + 1);
+        }
+
+        while (m--) {
+            int k, v;
+            cin >> k >> v;
+            int result = processQuery(k, v, mp);
+            cout << result << "\n";
+        }
+    }
+
+    return 0;
+}
+
+/////////////////////////////// segunda version
+#include<bits/stdc++.h>
+using namespace std;
+
+void sol(int n, int t){
+    vector<vector<int>> vec(1000001);
+    for (int i = 0; i < n; ++i) {
+        int temp; cin >> temp;
+        vec[temp].push_back(i+1);
+    }
+    while(t--){
+        int k, v;
+        cin >> k >> v;
+        cout << (vec[v].size() >= k ? vec[v][k-1] : 0) << endl;
+    }
+}
+
+void solve(){
+    int n, t;
+    while(cin >> n >> t){
+        sol(n, t);
+    }
+}
+
+int main(){
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+
+    int tc = 1;
+    for (int i = 1; i <= tc ; ++i) {
+        solve();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// Matrix Transpose UVA - 10895
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+const int N = 1e4+2;
+int a[N];
+vector<pair<int,int>> v[N];
+
+int main(){
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int i,j,n,m,k,x;
+    while(cin >> n >> m){
+        int mx = max(n,m);
+        for(i = 1; i <= mx; i++) v[i].clear();
+        for(i = 1; i <= n; i++){
+            cin >> k;
+            for(j = 0; j < k; j++) cin >> a[j];
+            for(j = 0; j < k; j++){
+                cin >> x;
+                v[a[j]].emplace_back(i,x);
+            }
+        }
+        for (i = 1; i <= m; i++) sort(v[i].begin(), v[i].end());
+        cout << m << " " << n << "\n";
+        for(i = 1; i <= m; i++){
+            int sz = v[i].size();
+            cout << sz;
+            for(j = 0; j < sz; j++) cout << " " << v[i][j].first;
+            cout << "\n";
+            for(j = 0; j < sz; j++){
+                if(j == 0) cout << v[i][j].second;
+                else cout << " " << v[i][j].second;
+            }
+            cout << "\n";
+        }
+    }
+    return 0;
+}
+
+/////////////////////////////// segunda version
+#include <bits/stdc++.h>
+using namespace std;
+
+const int N = 1e4+2;
+int a[N];
+vector<pair<int,int>> v[N];
+
+void process(int i, int m) {
+    if (i > m) {
+        return;
+    }
+
+    int sz = v[i].size();
+    cout << sz;
+    for(int j = 0; j < sz; j++){
+        cout << " " << v[i][j].first;
+    }
+    cout << "\n";
+    for(int j = 0; j < sz; j++){
+        if(j == 0) cout << v[i][j].second;
+        else cout << " " << v[i][j].second;
+    }
+    cout << "\n";
+
+    process(i + 1, m);
+}
+
+int main(){
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int i,j,n,m,k,x;
+    while(cin >> n >> m){
+        int mx = max(n,m);
+        for(i = 1; i <= mx; i++) v[i].clear();
+        for(i = 1; i <= n; i++){
+            cin >> k;
+            for(j = 0; j < k; j++){
+                cin >> a[j];
+            }
+            for(j = 0; j < k; j++){
+                cin >> x;
+                v[a[j]].emplace_back(i,x);
+            }
+        }
+        for (i = 1; i <= m; i++) {
+            sort(v[i].begin(), v[i].end());
+        }
+        cout << m << " " << n << "\n";
+
+        process(1, m);
+    }
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// The Forrest for the Trees UVA - 599
+/////////////////////////////// primera version
+#include <iostream>
+#include <vector>
+#include <cstring>
+
+using namespace std;
+
+vector<vector<int>> adj;
+vector<bool> visited;
+
+int dfs(int node) {
+    visited[node] = true;
+    int count = 0;
+    for (int i = 0; i < adj[node].size(); i++) {
+        if (!visited[adj[node][i]]) {
+            count += dfs(adj[node][i]);
+        }
+    }
+    return count + 1;
+}
+
+int main() {
+    int t;
+    cin >> t;
+    while (t--) {
+        adj = vector<vector<int>>(30);
+        visited = vector<bool>(30, false);
+        string s;
+        while (cin >> s && s[0] != '*') {
+            adj[s[1] - 'A'].push_back(s[3] - 'A');
+            adj[s[3] - 'A'].push_back(s[1] - 'A');
+        }
+        cin >> s;
+        int trees = 0, acorns = 0;
+        for (int i = 0; i < s.length(); i += 2) {
+            if (!visited[s[i] - 'A']) {
+                if (dfs(s[i] - 'A') == 1) {
+                    acorns++;
+                } else {
+                    trees++;
+                }
+            }
+        }
+        cout << "There are " << trees << " tree(s) and " << acorns << " acorn(s)." << endl;
+    }
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// Demanding Dilemma UVA - 11550
+/////////////////////////////// primera version
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int **createMatrix(int n, int m) {
+    int **matrix = new int *[n];
+    for (int i = 0; i < n; ++i) {
+        matrix[i] = new int[m];
+    }
+    return matrix;
+}
+
+void deleteMatrix(int **matrix, int n) {
+    for (int i = 0; i < n; ++i) {
+        delete[] matrix[i];
+    }
+    delete[] matrix;
+}
+
+bool canBeGraph(int **matrix, int n, int m) {
+    vector<int> edges(m);
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+            cin >> matrix[i][j];
+            edges[j] += matrix[i][j];
+        }
+    }
+
+    int E = 0;
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            bool e = 0;
+            for (int k = 0; k < m; ++k) {
+                e |= (edges[k] == 2 && matrix[i][k] && matrix[j][k]);
+            }
+            E += e;
+        }
+    }
+
+    return (E == m);
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+
+    int t, n, m;
+    cin >> t;
+    while (t--) {
+        cin >> n >> m;
+        int **matrix = createMatrix(n, m);
+
+        bool result = canBeGraph(matrix, n, m);
+
+        deleteMatrix(matrix, n);
+
+        cout << (result ? "Yes" : "No") << endl;
+    }
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// Coin Collector UVA - 11264
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef long long ll;
+
+const int N = 1e3+2;
+const ll inf = 1e14;
+ll a[N];
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+
+    int t, n;
+    cin >> t;
+    while (t--) {
+        cin >> n;
+        for (int i = 0; i < n; i++) {
+            cin >> a[i];
+        }
+        int ans = 1;
+        ll x = a[0];
+        a[n] = inf;
+        for (int i = 1; i < n; i++) {
+            if (x + a[i] < a[i + 1]) {
+                ans++;
+                x += a[i];
+            }
+        }
+        cout << ans << endl;
+    }
+}
+
+/////////////////////////////// segunda version
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef long long ll;
+
+const int N = 1e3+2;
+const ll inf = 1e14;
+ll a[N];
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+
+    int t, n;
+    cin >> t;
+    while (t--) {
+        cin >> n;
+        for (int i = 0; i < n; i++) {
+            cin >> a[i];
+        }
+
+        int ans = 1;
+        ll x = a[0];
+        a[n] = inf;
+
+        unordered_set<ll> sumSet;
+
+        for (int i = 1; i < n; i++) {
+            if (x + a[i] < a[i + 1] && sumSet.find(x + a[i]) == sumSet.end()) {
+                ans++;
+                x += a[i];
+                sumSet.insert(x);
+            }
+        }
+
+        cout << ans << endl;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// Gas Stations UVA - 12321
+/////////////////////////////// primera version
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+struct GasStation {
+    int x, r;
+};
+
+bool compareGasStations(const GasStation& a, const GasStation& b) {
+    return a.x - a.r < b.x - b.r;
+}
+
+int main() {
+    int L, G;
+    while (cin >> L >> G) {
+        if (L == 0 && G == 0) break;
+
+        GasStation* stations = new GasStation[G];  // Usar arreglo dinámico
+
+        for (int i = 0; i < G; i++) {
+            cin >> stations[i].x >> stations[i].r;
+        }
+
+        sort(stations, stations + G, compareGasStations);
+
+        int cnt = 0;
+        int idx = 0;
+        int covered = 0;
+
+        while (covered < L) {
+            int maxCovered = covered;
+
+            while (idx < G && stations[idx].x - stations[idx].r <= covered) {
+                maxCovered = max(maxCovered, stations[idx].x + stations[idx].r);
+                idx++;
+            }
+
+            if (maxCovered == covered) {
+                cout << -1 << endl;
+                break;
+            }
+
+            covered = maxCovered;
+            cnt++;
+        }
+
+        if (covered >= L) {
+            cout << G - cnt << endl;
+        }
+
+        delete[] stations;  // Liberar la memoria asignada
+    }
+
+    return 0;
+}
+
+/////////////////////////////// segunda version
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+struct GasStation {
+    int x, r;
+};
+
+bool compareGasStations(const GasStation& a, const GasStation& b) {
+    return a.x - a.r < b.x - b.r;
+}
+
+int main() {
+    int L, G;
+    while (cin >> L >> G) {
+        if (L == 0 && G == 0) break;
+
+        vector<GasStation> stations(G);
+        for (int i = 0; i < G; i++) {
+            cin >> stations[i].x >> stations[i].r;
+        }
+
+        sort(stations.begin(), stations.end(), compareGasStations);
+
+        int cnt = 0;
+        int idx = 0;
+        int covered = 0;
+
+        while (covered < L) {
+            int maxCovered = covered;
+
+            while (idx < G && stations[idx].x - stations[idx].r <= covered) {
+                maxCovered = max(maxCovered, stations[idx].x + stations[idx].r);
+                idx++;
+            }
+
+            if (maxCovered == covered) {
+                cout << -1 << endl;
+                break;
+            }
+
+            covered = maxCovered;
+            cnt++;
+        }
+
+        if (covered >= L) {
+            cout << G - cnt << endl;
+        }
+    }
+
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// Elephants UVA - 13109
+/////////////////////////////// primera version
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+bool cmp(int a, int b) {
+    return a > b;
+}
+
+int calculateMaxElephants(int m, int w, int* ar) {
+    sort(ar, ar + m, cmp);
+    int sum = 0;
+    for (int j = m - 1; j >= 0; j--) {
+        if (w > ar[j]) {
+            w -= ar[j];
+            sum++;
+        }
+    }
+    return sum;
+}
+
+int main() {
+    int n;
+    cin >> n;
+    for (int i = 0; i < n; i++) {
+        int m, w;
+        cin >> m >> w;
+        int* ar = new int[m];
+        for (int j = 0; j < m; j++) {
+            cin >> ar[j];
+        }
+        int result = calculateMaxElephants(m, w, ar);
+        cout << result << endl;
+        delete[] ar; // Liberar la memoria asignada dinámicamente
+    }
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// Extreme Terror UVA - 12834
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+struct ar{
+    int a, b;
+    int d;
+}aa[1000005];
+
+int a[1000005];
+int b[1000005];
+
+bool cmp(ar ab, ar ba){
+    return ab.d < ba.d;
+}
+
+int main(){
+    int t,n,k;
+    cin >> t;
+    for(int ck = 1; ck <= t; ck++){
+        cin >> n >> k;
+
+        for(int i = 0; i <n; i++)
+            cin >> a[i];
+
+        for(int i = 0; i <n; i++)
+            cin >> b[i];
+
+        for(int i = 0; i < n; i++){
+            aa[i].a = a[i];
+            aa[i].b = b[i];
+            aa[i].d = b[i] - a[i];
+        }
+
+        sort(aa, aa+n, cmp);
+        long long profit = 0;
+
+        for(int i = 0; i < n; i++){
+            if(aa[i].d < 0 and k > 0){
+                k--;
+                continue;
+            }
+            profit = profit + aa[i].d;
+        }
+        if(profit > 0)
+            cout << "Case " << ck << ": " << profit << endl;
+        else
+            cout << "Case " << ck << ": " << "No Profit" << endl;
+    }
+}
+
+/////////////////////////////// segunda version
+#include <bits/stdc++.h>
+using namespace std;
+
+struct ar{
+    int a, b;
+    int d;
+};
+
+bool cmp(ar ab, ar ba){
+    return ab.d < ba.d;
+}
+
+long long calculateProfit(ar* aa, int n, int k) {
+    sort(aa, aa+n, cmp);
+    long long profit = 0;
+
+    for(int i = 0; i < n; i++){
+        if(aa[i].d < 0 and k > 0){
+            k--;
+            continue;
+        }
+        profit = profit + aa[i].d;
+    }
+
+    return profit;
+}
+
+int main(){
+    int t,n,k;
+    cin >> t;
+    for(int ck = 1; ck <= t; ck++){
+        cin >> n >> k;
+
+        int* a = new int[n];
+        int* b = new int[n];
+        ar* aa = new ar[n];
+
+        for(int i = 0; i <n; i++)
+            cin >> a[i];
+
+        for(int i = 0; i <n; i++)
+            cin >> b[i];
+
+        for(int i = 0; i < n; i++){
+            aa[i].a = a[i];
+            aa[i].b = b[i];
+            aa[i].d = b[i] - a[i];
+        }
+
+        long long profit = calculateProfit(aa, n, k);
+
+        if(profit > 0)
+            cout << "Case " << ck << ": " << profit << endl;
+        else
+            cout << "Case " << ck << ": " << "No Profit" << endl;
+
+        delete[] a;
+        delete[] b;
+        delete[] aa;
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////// Angry Bids UVA - 12965
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int t;
+    cin >> t;
+    for (int tt = 1; tt <= t; tt++) {
+        int p, c;
+        set<int> st;
+        cin >> p >> c;
+        int pp[p], cc[c];
+        for (int i = 0; i < p; i++) {
+            cin >> pp[i];
+            st.insert(pp[i]);
+        }
+        for (int i = 0; i < c; i++) {
+            cin >> cc[i];
+            st.insert(cc[i]);
+        }
+        sort(pp, pp + p);
+        sort(cc, cc + c);
+        int res, n = INT_MAX;
+        st.insert(0);
+        for (set<int>::iterator i = st.begin(); i != st.end(); i++) {
+            int a = lower_bound(cc, cc + c, (*i)) - cc;
+            int b = p - (upper_bound(pp, pp + p, (*i)) - pp);
+
+            if (a + b < n) {
+                n = a + b;
+                res = (*i);
+            }
+        }
+        cout << res << " " << n << endl;
+    }
+}
+
+/////////////////////////////// segunda version
+#include <bits/stdc++.h>
+using namespace std;
+
+void readArray(int arr[], int n) {
+    for (int i = 0; i < n; i++) {
+        cin >> arr[i];
+    }
+}
+
+pair<int, int> calculateResponse(int pp[], int p, int cc[], int c) {
+    set<int> st;
+    for (int i = 0; i < p; i++) {
+        st.insert(pp[i]);
+    }
+    for (int i = 0; i < c; i++) {
+        st.insert(cc[i]);
+    }
+    sort(pp, pp + p);
+    sort(cc, cc + c);
+
+    int res, n = INT_MAX;
+    st.insert(0);
+
+    for (set<int>::iterator i = st.begin(); i != st.end(); i++) {
+        int a = lower_bound(cc, cc + c, (*i)) - cc;
+        int b = p - (upper_bound(pp, pp + p, (*i)) - pp);
+
+        if (a + b < n) {
+            n = a + b;
+            res = (*i);
+        }
+    }
+    return make_pair(res, n);
+}
+
+int main() {
+    int t;
+    cin >> t;
+    for (int tt = 1; tt <= t; tt++) {
+        int p, c;
+        cin >> p >> c;
+        int pp[p], cc[c];
+        readArray(pp, p);
+        readArray(cc, c);
+
+        pair<int, int> response = calculateResponse(pp, p, cc, c);
+        cout << response.first << " " << response.second << endl;
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////Dropping Balls UVA - 679
+/////////////////////////////// primera version
+#include <bits/stdc++.h>
+using namespace std;
+
+void eval(int d, int I) {
+  int k = 1;
+  for(int i = 0; i < d - 1; i++) {
+    if (I % 2) {
+      k <<= 1;
+      I = (I + 1) >> 1;
+    } else {
+      k = (k << 1) + 1;
+      I >>= 1;
+    }
+  }
+  cout << k << endl;
+}
+
+int main() {
+  int n;
+  while (cin >> n && n != -1) {
+    for (int i = 0; i < n; i++) {
+      int d, I;
+      cin >> d >> I;
+      eval(d, I);
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// Count It UVA - 12893
+/////////////////////////////// primera version
+#include <iostream>
+
+using namespace std;
+
+int main() {
+    int cas;
+    unsigned long long n;
+    cin >> cas;
+
+    while (cas--) {
+        cin >> n;
+        int val = 0;
+
+        for (unsigned long long i = n; i >= 1; i = i / 2) {
+            val += i % 2;
+        }
+
+        cout << val << endl;
+    }
+
+    return 0;
+}
+
+/////////////////////////////// segunda version
+#include <iostream>
+
+using namespace std;
+
+int countSetBits(unsigned long long n) {
+    int val = 0;
+    for (unsigned long long i = n; i >= 1; i = i / 2) {
+        val += i % 2;
+    }
+    return val;
+}
+
+int main() {
+    int cas;
+    unsigned long long n;
+    cin >> cas;
+
+    while (cas--) {
+        cin >> n;
+        int val = countSetBits(n);
+        cout << val << endl;
+    }
+
+    return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// Popes UVA - 957
+/////////////////////////////// primera version
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+
+using namespace std;
+
+int main() {
+    int t, n;
+    while(cin >> t) {
+        cin >> n;
+        unordered_map<int, int> L;
+        int temp;
+        for(int i = 0; i < n; i++){
+            cin >> temp;
+            L[i] = temp;
+        }
+        int r = 0;
+        int max = -1, al, ar;
+        for(int i = 0; i < n; i++){
+            while(r < n and L[r] <= L[i]+t-1)
+                r++;
+            if(r-i > max){
+                max = r-i;
+                al = L[i], ar = L[r-1];
+            }
+        }
+        cout << max << " " << al << " " << ar << "\n";
+    }
+    return 0;
+}
+
+/////////////////////////////// segunda version
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+
+using namespace std;
+
+unordered_map<int, int> leerEntrada(int n) {
+    unordered_map<int, int> L;
+    int temp;
+    for(int i = 0; i < n; i++){
+        cin >> temp;
+        L[i] = temp;
+    }
+    return L;
+}
+
+tuple<int, int, int> calcularMaximo(unordered_map<int, int>& L, int n, int t) {
+    int r = 0;
+    int max = -1, al, ar;
+    for(int i = 0; i < n; i++){
+        while(r < n and L[r] <= L[i]+t-1)
+            r++;
+        if(r-i > max){
+            max = r-i;
+            al = L[i], ar = L[r-1];
+        }
+    }
+    return make_tuple(max, al, ar);
+}
+
+int main() {
+    int t, n;
+    while(cin >> t) {
+        cin >> n;
+        unordered_map<int, int> L = leerEntrada(n);
+        auto [max, al, ar] = calcularMaximo(L, n, t);
+        cout << max << " " << al << " " << ar << "\n";
+    }
+    return 0;
+}
